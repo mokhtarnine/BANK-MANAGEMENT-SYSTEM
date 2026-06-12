@@ -1,0 +1,8 @@
+com\bank\model\CheckingAccount.class
+com\bank\model\TransactionType.class
+com\bank\model\Account.class
+com\bank\model\User.class
+com\bank\model\Employee.class
+com\bank\model\SavingsAccount.class
+com\bank\model\Customer.class
+com\bank\model\Transaction.class
