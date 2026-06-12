@@ -43,6 +43,7 @@ BankManagementSystem/
 │   │   │           │   └── AlertLogPanel.java
 │   │   │           │
 │   │   │           ├── model/
+|   |   |           |   ├── User.java
 │   │   │           │   ├── Customer.java
 │   │   │           │   ├── Employee.java
 │   │   │           │   ├── Account.java
