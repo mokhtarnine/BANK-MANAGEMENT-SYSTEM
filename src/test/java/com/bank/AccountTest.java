@@ -1,5 +1,9 @@
 package com.bank;
 
+import com.bank.exception.AccountNotEmptyException;
+import com.bank.exception.BankException;
+import com.bank.exception.InsufficientFundsException;
+import com.bank.exception.InvalidAmountException;
 import com.bank.model.Account;
 import com.bank.model.CheckingAccount;
 import com.bank.model.Employee;
@@ -22,7 +26,7 @@ class AccountTest {
     }
 
     @Test
-    void deposit_shouldIncreaseBalance() {
+    void deposit_shouldIncreaseBalance() throws BankException {
         Employee employee = createEmployee();
 
         Account account = new SavingsAccount(
@@ -44,7 +48,26 @@ class AccountTest {
     }
 
     @Test
-    void savingsWithdraw_shouldDecreaseBalance() {
+    void deposit_invalidAmount_shouldThrowException() {
+        Employee employee = createEmployee();
+
+        Account account = new SavingsAccount(
+                "ACC006",
+                1000.0,
+                0.05
+        );
+
+        assertThrows(
+                InvalidAmountException.class,
+                () -> account.deposit(
+                        0.0,
+                        employee
+                )
+        );
+    }
+
+    @Test
+    void savingsWithdraw_shouldDecreaseBalance() throws BankException {
         Employee employee = createEmployee();
 
         Account account = new SavingsAccount(
@@ -66,7 +89,7 @@ class AccountTest {
     }
 
     @Test
-    void checkingWithdraw_shouldAllowOverdraftWithinLimit() {
+    void checkingWithdraw_shouldAllowOverdraftWithinLimit() throws BankException {
         Employee employee = createEmployee();
 
         Account account = new CheckingAccount(
@@ -98,7 +121,7 @@ class AccountTest {
         );
 
         assertThrows(
-                RuntimeException.class,
+                InsufficientFundsException.class,
                 () -> account.withdraw(
                         1200.0,
                         employee
@@ -117,11 +140,25 @@ class AccountTest {
         );
 
         assertThrows(
-                RuntimeException.class,
+                InsufficientFundsException.class,
                 () -> account.withdraw(
                         1600.0,
                         employee
                 )
+        );
+    }
+
+    @Test
+    void closeAccount_nonZeroBalance_shouldThrowException() {
+        Account account = new SavingsAccount(
+                "ACC007",
+                1000.0,
+                0.05
+        );
+
+        assertThrows(
+                AccountNotEmptyException.class,
+                account::closeAccount
         );
     }
 }

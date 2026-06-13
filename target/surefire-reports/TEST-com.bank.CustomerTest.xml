@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.bank.AccountTest" time="0.148" tests="7" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.bank.CustomerTest" time="0.023" tests="4" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="25"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -59,11 +59,8 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="69.0"/>
   </properties>
-  <testcase name="deposit_shouldIncreaseBalance" classname="com.bank.AccountTest" time="0.061"/>
-  <testcase name="deposit_invalidAmount_shouldThrowException" classname="com.bank.AccountTest" time="0.009"/>
-  <testcase name="checkingWithdraw_moreThanOverdraftLimit_shouldThrowException" classname="com.bank.AccountTest" time="0.004"/>
-  <testcase name="checkingWithdraw_shouldAllowOverdraftWithinLimit" classname="com.bank.AccountTest" time="0.002"/>
-  <testcase name="savingsWithdraw_shouldDecreaseBalance" classname="com.bank.AccountTest" time="0.003"/>
-  <testcase name="savingsWithdraw_moreThanBalance_shouldThrowException" classname="com.bank.AccountTest" time="0.003"/>
-  <testcase name="closeAccount_nonZeroBalance_shouldThrowException" classname="com.bank.AccountTest" time="0.006"/>
+  <testcase name="customerRole_shouldReturnCustomer" classname="com.bank.CustomerTest" time="0.009"/>
+  <testcase name="setEmail_shouldUpdateEmail" classname="com.bank.CustomerTest" time="0.001"/>
+  <testcase name="newCustomer_shouldHaveEmptyAccountList" classname="com.bank.CustomerTest" time="0.002"/>
+  <testcase name="customerConstructor_shouldInitializeFields" classname="com.bank.CustomerTest" time="0.001"/>
 </testsuite>

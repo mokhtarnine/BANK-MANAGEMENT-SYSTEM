@@ -5,7 +5,7 @@ public class InsufficientFundsException extends BankException{
     private final double available;
     
     public InsufficientFundsException(double requested,double available){
-        super("Requested" + requested + "but only "+ available+"available");
+        super(String.format("Requested %.2f but only %.2f available", requested, available));
         this.requested = requested;
         this.available = available;
     }

@@ -1,5 +1,10 @@
 package com.bank.model;
 
+import com.bank.exception.AccountClosedException;
+import com.bank.exception.BankException;
+import com.bank.exception.InsufficientFundsException;
+import com.bank.exception.InvalidAmountException;
+
 public class CheckingAccount extends Account{
     public double overdraftLimit;
 
@@ -15,13 +20,17 @@ public class CheckingAccount extends Account{
     }
 
     @Override
-    public void withdraw(double amount,Employee employee) {
+    public void withdraw(double amount,Employee employee) throws BankException {
         lock.lock();
         try {
-            if (closed) {throw new RuntimeException( "Account is closed");
-                }
+            if (amount <= 0) {
+                throw new InvalidAmountException(amount);
+            }
+            if (closed) {
+                throw new AccountClosedException(accountNumber);
+            }
             if (balance - amount < -overdraftLimit) {
-                throw new RuntimeException(  "Insufficient funds");
+                throw new InsufficientFundsException(amount, balance + overdraftLimit);
             }
             balance -= amount;
         }finally {

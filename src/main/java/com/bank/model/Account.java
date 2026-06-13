@@ -1,5 +1,10 @@
 package  com.bank.model;
 
+import com.bank.exception.AccountClosedException;
+import com.bank.exception.AccountNotEmptyException;
+import com.bank.exception.BankException;
+import com.bank.exception.InvalidAmountException;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -22,20 +27,34 @@ public abstract class Account {
     public String getAccountNumber(){
         return accountNumber;
     }
-    public void deposit(double amount, Employee employee){
+    public void deposit(double amount, Employee employee) throws AccountClosedException {
         lock.lock();
         try{
+            if (amount <= 0) {
+                throw new InvalidAmountException(amount);
+            }
+            if (closed) {
+                throw new AccountClosedException(accountNumber);
+            }
             balance += amount;
         } finally{
             lock.unlock();
         }
     }
-    public abstract void withdraw(double amout, Employee employee);
-    public void closeAccount(){
-        if (balance == 0) {
+    public abstract void withdraw(double amount, Employee employee) throws BankException;
+    public void closeAccount() throws BankException {
+        lock.lock();
+        try {
+            if (closed) {
+                throw new AccountClosedException(accountNumber);
+            }
+            if (balance != 0) {
+                throw new AccountNotEmptyException(accountNumber, balance);
+            }
             closed = true;
+        } finally {
+            lock.unlock();
         }
-
     }
     public void addTransaction(Transaction transaction){
         transactions.add(transaction);
