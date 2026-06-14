@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 public class AuditService {
-
+/* this class help in record and track actions done in the system */
     private static final Logger LOGGER =
             Logger.getLogger(AuditService.class.getName());
 
