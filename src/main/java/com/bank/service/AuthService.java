@@ -5,6 +5,7 @@ import com.bank.model.Employee;
 import java.util.HashMap;
 
 public class AuthService {
+    /* this class make authentification for make know who employee make this operation */
 
     private final HashMap<String, Employee> employees;
 
