@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class BankService {
+    /* role of this calss like brain of application Apply bank rules,Manage operations,Control models */
 
     private final ArrayList<Account> accounts;
     private final HashMap<String, Customer> customers;
