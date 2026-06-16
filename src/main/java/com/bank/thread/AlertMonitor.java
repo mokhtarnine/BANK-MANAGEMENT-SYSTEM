@@ -3,15 +3,13 @@ package com.bank.thread;
 import com.bank.exception.OverdraftAlertException;
 import com.bank.model.Account;
 import com.bank.service.BankService;
-
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
 public class AlertMonitor implements Runnable {
 
-    private static final Logger LOGGER =
-            Logger.getLogger(AlertMonitor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AlertMonitor.class.getName());
 
     private final BankService bankService;
     private final double threshold;
