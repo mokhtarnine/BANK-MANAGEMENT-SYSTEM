@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +24,11 @@ class BankControllerTest {
     @BeforeEach
     void setUp() {
         controller = new BankController();
+    }
+
+    @AfterEach
+    void tearDown() {
+        controller.shutdownThreads();
     }
 
     @Test
@@ -212,5 +218,116 @@ class BankControllerTest {
 
         assertEquals(700.0, fromAccount.getBalance(), 0.001);
         assertEquals(500.0, toAccount.getBalance(), 0.001);
+    }
+
+    @Test
+    void requestDeposit_shouldProcessDepositInBackground() throws InterruptedException {
+        controller.login(
+                "admin",
+                "admin123"
+        );
+
+        Customer customer = controller.createCustomer(
+                "C001",
+                "Ahmed",
+                "ahmed",
+                "1234",
+                "ahmed@gmail.com"
+        );
+
+        Account account = controller.openAccount(
+                customer.getId(),
+                "SAVINGS",
+                1000.0
+        );
+
+        controller.requestDeposit(
+                account.getAccountNumber(),
+                500.0
+        );
+
+        waitForBalance(account, 1500.0);
+
+        assertEquals(1500.0, account.getBalance(), 0.001);
+    }
+
+    @Test
+    void requestWithdraw_shouldProcessWithdrawInBackground() throws InterruptedException {
+        controller.login(
+                "admin",
+                "admin123"
+        );
+
+        Customer customer = controller.createCustomer(
+                "C001",
+                "Ahmed",
+                "ahmed",
+                "1234",
+                "ahmed@gmail.com"
+        );
+
+        Account account = controller.openAccount(
+                customer.getId(),
+                "SAVINGS",
+                1000.0
+        );
+
+        controller.requestWithdraw(
+                account.getAccountNumber(),
+                300.0
+        );
+
+        waitForBalance(account, 700.0);
+
+        assertEquals(700.0, account.getBalance(), 0.001);
+    }
+
+    @Test
+    void requestTransfer_shouldProcessTransferInBackground() throws InterruptedException {
+        controller.login(
+                "admin",
+                "admin123"
+        );
+
+        Customer customer = controller.createCustomer(
+                "C001",
+                "Ahmed",
+                "ahmed",
+                "1234",
+                "ahmed@gmail.com"
+        );
+
+        Account fromAccount = controller.openAccount(
+                customer.getId(),
+                "CHECKING",
+                1000.0
+        );
+
+        Account toAccount = controller.openAccount(
+                customer.getId(),
+                "SAVINGS",
+                200.0
+        );
+
+        controller.requestTransfer(
+                fromAccount.getAccountNumber(),
+                toAccount.getAccountNumber(),
+                300.0
+        );
+
+        waitForBalance(fromAccount, 700.0);
+
+        assertEquals(700.0, fromAccount.getBalance(), 0.001);
+        assertEquals(500.0, toAccount.getBalance(), 0.001);
+    }
+
+    private void waitForBalance(Account account, double expectedBalance) throws InterruptedException {
+        int attempts = 0;
+
+        while (attempts < 10
+                && Math.abs(account.getBalance() - expectedBalance) > 0.001) {
+            Thread.sleep(100);
+            attempts++;
+        }
     }
 }

@@ -1,3 +1,7 @@
+com\bank\thread\AlertMonitor.class
+com\bank\thread\TransactionQueue.class
 com\bank\model\Employee.class
+com\bank\thread\TransactionWorker.class
 com\bank\model\TransactionType.class
 com\bank\model\User.class
+com\bank\thread\TransactionRequest.class
