@@ -3,19 +3,18 @@ package com.bank.controller;
 import java.util.Collection;
 import java.util.List;
 
-import com.bank.thread.AlertMonitor;
-import com.bank.thread.TransactionQueue;
-import com.bank.thread.TransactionRequest;
-import com.bank.thread.TransactionWorker;
-import com.bank.model.TransactionType;
-
 import com.bank.exception.BankException;
 import com.bank.model.Account;
 import com.bank.model.Customer;
 import com.bank.model.Employee;
 import com.bank.model.Transaction;
+import com.bank.model.TransactionType;
 import com.bank.service.AuthService;
 import com.bank.service.BankService;
+import com.bank.thread.AlertMonitor;
+import com.bank.thread.TransactionQueue;
+import com.bank.thread.TransactionRequest;
+import com.bank.thread.TransactionWorker;
 
 public class BankController {
 
@@ -197,6 +196,75 @@ public class BankController {
         alertMonitor.stop();
         alertThread.interrupt();
     }
+
+    public int getTotalCustomers() {
+    return bankService.getAllCustomers().size();
+    }
+
+    public int getTotalAccounts() {
+        return bankService.getAllAccounts().size();
+    }
+
+    public double getTotalBalance() {
+        double total = 0;
+
+        for (Account account : bankService.getAllAccounts()) {
+            total += account.getBalance();
+        }
+
+        return total;
+    }
+
+    public Object[][] getCustomerAccountTableData(String customerId) {
+        Customer selectedCustomer = null;
+
+        for (Customer customer : bankService.getAllCustomers()) {
+            if (customer.getId().equals(customerId)) {
+                selectedCustomer = customer;
+                break;
+            }
+        }
+
+        if (selectedCustomer == null) {
+            return new Object[0][0];
+        }
+
+        List<Account> accounts = selectedCustomer.getAccounts();
+
+        Object[][] data = new Object[accounts.size()][4];
+
+        for (int i = 0; i < accounts.size(); i++) {
+            Account account = accounts.get(i);
+
+            data[i][0] = account.getAccountNumber();
+            data[i][1] = getAccountTypeName(account);
+            data[i][2] = account.getBalance();
+            data[i][3] = account.isClosed();
+        }
+
+        return data;
+    }
+
+    private String getAccountTypeName(Account account) {
+        String className = account.getClass().getSimpleName();
+
+        if (className.equals("CheckingAccount")) {
+            return "CHECKING";
+        }
+
+        if (className.equals("SavingsAccount")) {
+            return "SAVINGS";
+        }
+
+        return className;
+    }
+
+    // this for don't touch in file of alertMonitro all this ger by controller
+    public void setAlertHandler(java.util.function.Consumer<String> alertHandler) {
+        alertMonitor.setAlertHandler(alertHandler);
+    }
+
+
 
 
 }

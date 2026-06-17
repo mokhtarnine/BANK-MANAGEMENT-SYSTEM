@@ -25,10 +25,12 @@ public class CustomerListPanel extends JPanel {
     private final JTextField searchField;
     private final JTable customerTable;
     private final DefaultTableModel tableModel;
+    private final MainFrame mainFrame;
 
-    public CustomerListPanel(BankController controller,AccountDetailPanel accountDetailPanel) {
+    public CustomerListPanel(BankController controller,AccountDetailPanel accountDetailPanel, MainFrame mainFrame) {
         this.controller = controller;
         this.accountDetailPanel = accountDetailPanel;
+        this.mainFrame = mainFrame;
         this.searchField = new JTextField();
 
         this.tableModel = new DefaultTableModel(
@@ -163,7 +165,7 @@ public class CustomerListPanel extends JPanel {
                     emailField.getText()
             );
 
-            refreshCustomers();
+            mainFrame.refreshAllPanels();
         }
     }
     private void viewSelectedCustomerAccounts() {
@@ -199,5 +201,6 @@ public class CustomerListPanel extends JPanel {
         }
 
         accountDetailPanel.setCustomer(selectedCustomer);
+        mainFrame.showAccountsTab();
     }
 }

@@ -2,14 +2,12 @@ package com.bank.gui;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
-import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import com.bank.controller.BankController;
-import com.bank.model.Account;
 
 public class DashboardPanel extends JPanel {
 
@@ -59,17 +57,9 @@ public class DashboardPanel extends JPanel {
     }
 
     public void refreshDashboard() {
-        int totalCustomers = controller.getAllCustomers().size();
-
-        List<Account> accounts = controller.getAllAccounts();
-
-        int totalAccounts = accounts.size();
-
-        double totalBalance = 0;
-
-        for (Account account : accounts) {
-            totalBalance += account.getBalance();
-        }
+        int totalCustomers = controller.getTotalCustomers();
+        int totalAccounts = controller.getTotalAccounts();
+        double totalBalance = controller.getTotalBalance();
 
         customersValueLabel.setText(String.valueOf(totalCustomers));
         accountsValueLabel.setText(String.valueOf(totalAccounts));

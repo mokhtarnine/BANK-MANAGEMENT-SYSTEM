@@ -1,11 +1,13 @@
 package com.bank.thread;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
+
 import com.bank.exception.OverdraftAlertException;
 import com.bank.model.Account;
 import com.bank.service.BankService;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Logger;
 
 public class AlertMonitor implements Runnable {
 
@@ -14,6 +16,7 @@ public class AlertMonitor implements Runnable {
     private final BankService bankService;
     private final double threshold;
     private final Set<String> alertedAccounts;
+    private Consumer<String> alertHandler;
 
     private volatile boolean running;
 
@@ -44,6 +47,10 @@ public class AlertMonitor implements Runnable {
                 checkAccount(account);
             } catch (OverdraftAlertException e) {
                 LOGGER.warning(e.getMessage());
+
+                if (alertHandler != null) {
+                    alertHandler.accept(e.getMessage());
+                }
             }
         }
     }
@@ -63,6 +70,9 @@ public class AlertMonitor implements Runnable {
         } else {
             alertedAccounts.remove(accountNumber);
         }
+    }
+    public void setAlertHandler(Consumer<String> alertHandler) {
+        this.alertHandler = alertHandler;
     }
 
     public void stop() {

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -12,6 +13,7 @@ import javax.swing.JTextArea;
 public class AlertLogPanel extends JPanel {
 
     private final JTextArea alertTextArea;
+
 
     public AlertLogPanel() {
         this.alertTextArea = new JTextArea();
@@ -61,4 +63,6 @@ public class AlertLogPanel extends JPanel {
     public void clearAlerts() {
         alertTextArea.setText("");
     }
+
+    
 }

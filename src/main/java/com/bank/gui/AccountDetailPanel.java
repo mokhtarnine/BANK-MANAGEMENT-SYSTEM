@@ -5,16 +5,17 @@ import java.awt.GridLayout;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 import com.bank.controller.BankController;
-import com.bank.model.Account;
 import com.bank.model.Customer;
 
 public class AccountDetailPanel extends JPanel {
@@ -25,9 +26,11 @@ public class AccountDetailPanel extends JPanel {
     private final JLabel customerLabel;
     private final JTable accountTable;
     private final DefaultTableModel accountTableModel;
+    private final MainFrame mainFrame;
 
-    public AccountDetailPanel(BankController controller) {
+    public AccountDetailPanel(BankController controller,MainFrame mainFrame) {
         this.controller = controller;
+        this.mainFrame = mainFrame;
 
         this.customerLabel = new JLabel("No customer selected");
 
@@ -51,7 +54,7 @@ public class AccountDetailPanel extends JPanel {
                 BorderLayout.CENTER
         );
 
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 4, 5, 5));
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 6, 5, 5));
 
         JButton openAccountButton = new JButton("Open Account");
         openAccountButton.addActionListener(e -> openAccount());
@@ -59,11 +62,23 @@ public class AccountDetailPanel extends JPanel {
         JButton closeAccountButton = new JButton("Close Account");
         closeAccountButton.addActionListener(e -> closeSelectedAccount());
 
+        JButton depositButton = new JButton("Deposit");
+        depositButton.addActionListener(e -> openTransactionDialog("DEPOSIT"));
+
+        JButton withdrawButton = new JButton("Withdraw");
+        withdrawButton.addActionListener(e -> openTransactionDialog("WITHDRAW"));
+
+        JButton transferButton = new JButton("Transfer");
+        transferButton.addActionListener(e -> openTransactionDialog("TRANSFER"));
+
         JButton refreshButton = new JButton("Refresh");
         refreshButton.addActionListener(e -> refreshAccounts());
 
         buttonPanel.add(openAccountButton);
         buttonPanel.add(closeAccountButton);
+        buttonPanel.add(depositButton);
+        buttonPanel.add(withdrawButton);
+        buttonPanel.add(transferButton);
         buttonPanel.add(refreshButton);
 
         add(buttonPanel, BorderLayout.SOUTH);
@@ -93,29 +108,13 @@ public class AccountDetailPanel extends JPanel {
             return;
         }
 
-        for (Account account : customer.getAccounts()) {
-            accountTableModel.addRow(new Object[]{
-                    account.getAccountNumber(),
-                    getAccountType(account),
-                    account.getBalance(),
-                    account.isClosed()
-            });
+        Object[][] rows = controller.getCustomerAccountTableData(customer.getId());
+
+        for (Object[] row : rows) {
+            accountTableModel.addRow(row);
         }
     }
 
-    private String getAccountType(Account account) {
-        String className = account.getClass().getSimpleName();
-
-        if (className.equals("CheckingAccount")) {
-            return "CHECKING";
-        }
-
-        if (className.equals("SavingsAccount")) {
-            return "SAVINGS";
-        }
-
-        return className;
-    }
 
     private void openAccount() {
         if (customer == null) {
@@ -159,7 +158,7 @@ public class AccountDetailPanel extends JPanel {
                         initialBalance
                 );
 
-                refreshAccounts();
+                mainFrame.refreshAllPanels();
 
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(
@@ -177,23 +176,14 @@ public class AccountDetailPanel extends JPanel {
     }
 
     private void closeSelectedAccount() {
-        int selectedRow = accountTable.getSelectedRow();
+        String accountNumber = getSelectedAccountNumber();
 
-        if (selectedRow == -1) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Please select an account first."
-            );
+        if (accountNumber == null) {
             return;
         }
-
-        String accountNumber = accountTableModel
-                .getValueAt(selectedRow, 0)
-                .toString();
-
         try {
             controller.closeAccount(accountNumber);
-            refreshAccounts();
+            mainFrame.refreshAllPanels();
 
         } catch (Exception e) {
             JOptionPane.showMessageDialog(
@@ -202,4 +192,43 @@ public class AccountDetailPanel extends JPanel {
             );
         }
     }
+
+    private String getSelectedAccountNumber() {
+        int selectedRow = accountTable.getSelectedRow();
+
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Please select an account first."
+            );
+            return null;
+        }
+
+        return accountTableModel
+                .getValueAt(selectedRow, 0)
+                .toString();
+    }
+
+    private void openTransactionDialog(String transactionType) {
+        String accountNumber = getSelectedAccountNumber();
+
+        if (accountNumber == null) {
+            return;
+        }
+
+        JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+        TransactionDialog dialog = new TransactionDialog(
+                parentFrame,
+                controller,
+                transactionType,
+                accountNumber,
+                this,
+                mainFrame
+        );
+
+        dialog.setVisible(true);
+    }
+
+
 }
