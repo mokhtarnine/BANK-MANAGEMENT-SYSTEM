@@ -71,6 +71,10 @@ public abstract class Account {
     public ReentrantLock getLock(){
         return lock;
     }
+    // this methode for repositry can set colse by this 
+    public void setClosed(boolean closed) {
+        this.closed = closed;
+    }
     
 
 }

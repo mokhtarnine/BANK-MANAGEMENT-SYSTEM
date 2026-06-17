@@ -10,23 +10,38 @@ import java.util.List;
 import java.util.Collection;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.bank.repository.BankRepository;
+import com.bank.repository.DatabaseManager;
+import com.bank.repository.JdbcBankRepository;
+
 public class BankService {
     /* role of this calss like brain of application Apply bank rules,Manage operations,Control models */
 
     private final ArrayList<Account> accounts;
     private final HashMap<String, Customer> customers;
     private final ReentrantLock transferLock;
+    private final BankRepository repository;
 
     public BankService() {
+        this(true);
+    }
+
+    public BankService(boolean persistenceEnabled) {
         this.accounts = new ArrayList<>();
         this.customers = new HashMap<>();
         this.transferLock = new ReentrantLock();
+        this.repository = persistenceEnabled
+                ? new JdbcBankRepository(new DatabaseManager())
+                : null;
+
+        loadDataSafely();
     }
 
     //  methdoe of crearteCustomer
     public Customer createCustomer(String id,String fullName,String username,String password,String email) {
         Customer customer = new Customer( id,fullName,username,password,email);
         customers.put(id, customer);
+        saveDataSafely();
         return customer;
     }
     // get all customers
@@ -60,6 +75,8 @@ public class BankService {
         accounts.add(account);
         customer.addAccount(account);
 
+        saveDataSafely();
+
         return account;
     }
     // find account 
@@ -81,6 +98,7 @@ public class BankService {
         }
 
         account.deposit(amount, employee);
+        saveDataSafely();
     }
 
     public void withdraw(String accountNumber,double amount,Employee employee) throws BankException {
@@ -90,6 +108,7 @@ public class BankService {
             throw new IllegalArgumentException("Account not found: " + accountNumber);
         }
         account.withdraw(amount, employee);
+        saveDataSafely();
     }
     // Add Transfer
     public void transfer( String fromAccountNumber,String toAccountNumber,double amount,Employee employee) throws BankException {
@@ -113,6 +132,7 @@ public class BankService {
         try {
             fromAccount.withdraw(amount, employee);
             toAccount.deposit(amount, employee);
+            saveDataSafely();
         } finally {
             transferLock.unlock();
         }
@@ -148,6 +168,7 @@ public class BankService {
         }
 
         account.closeAccount();
+        saveDataSafely();
     }
     // filter Account by type 
     public List<Account> filterAccountsByType(String type) {
@@ -174,7 +195,36 @@ public class BankService {
         return account.getTransaction();
     }
 
+    // load data / old data appears again
+    private void loadDataSafely() {
+        if (repository == null) {
+            return;
+        }
 
+        try {
+            repository.loadAll(customers, accounts);
+        } catch (BankException e) {
+            throw new IllegalStateException(
+                    "Failed to load bank data",
+                    e
+            );
+        }
+    }
 
+    //Try to save. If saving fails, throw runtime error with clear message.
+    private void saveDataSafely() {
+        if (repository == null) {
+            return;
+        }
+
+        try {
+            repository.saveAll(customers, accounts);
+        } catch (BankException e) {
+            throw new IllegalStateException(
+                    "Failed to save bank data",
+                    e
+            );
+        }
+    }
 
 }

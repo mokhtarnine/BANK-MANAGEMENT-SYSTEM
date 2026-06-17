@@ -23,7 +23,7 @@ class BankControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller = new BankController();
+        controller = new BankController(false);
     }
 
     @AfterEach

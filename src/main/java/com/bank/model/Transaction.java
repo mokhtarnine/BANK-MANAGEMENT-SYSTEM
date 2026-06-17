@@ -2,7 +2,7 @@ package com.bank.model;
 
 import java.time.LocalDateTime;
 
-public  class Transaction{
+public final class Transaction{
     private final String transactionId ;
     private final TransactionType type;
     private final double amount;

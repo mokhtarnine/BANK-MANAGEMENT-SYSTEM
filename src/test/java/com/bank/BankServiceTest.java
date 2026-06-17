@@ -19,7 +19,7 @@ class BankServiceTest {
 
     @BeforeEach
     void setUp() {
-        bankService = new BankService();
+        bankService = new BankService(false);
 
         employee = new Employee(
                 "E001",

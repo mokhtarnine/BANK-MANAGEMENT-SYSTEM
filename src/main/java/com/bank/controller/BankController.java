@@ -30,7 +30,11 @@ public class BankController {
     private final Thread alertThread;
 
     public BankController() {
-        this.bankService = new BankService();
+        this(true);
+    }
+
+    public BankController(boolean persistenceEnabled) {
+        this.bankService = new BankService(persistenceEnabled);
         this.authService = new AuthService();
 
         this.transactionQueue = new TransactionQueue();
