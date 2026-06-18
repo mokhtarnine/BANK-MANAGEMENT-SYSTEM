@@ -3,11 +3,13 @@ package com.bank.service;
 import com.bank.model.Employee;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
@@ -16,6 +18,9 @@ public class AuditService implements AutoCloseable {
      * The audit service records who performed an operation, what happened,
      * and whether the application produced a warning or serious error.
      */
+    private static final String LOGGING_CONFIG_RESOURCE =
+            "logging.properties";
+
     private static final Path DEFAULT_LOG_FILE =
             Path.of("logs", "bank.log");
 
@@ -50,17 +55,46 @@ public class AuditService implements AutoCloseable {
         this.ownedHandler = configureLogger(logger, absoluteLogFile);
     }
 
-    /*
-     * BankController can be created many times during unit tests. The
-     * synchronized check prevents duplicate FileHandlers from writing the same
-     * message several times to bank.log.
+    /**
+     * Loads the application's logging settings once from logging.properties.
+     *
+     * The configuration file controls the file path, append mode, log levels,
+     * and message format. Loading it once avoids duplicate FileHandlers when
+     * several BankController objects are created during tests.
      */
     private static synchronized void configureDefaultLogger() {
         if (defaultLoggerConfigured) {
             return;
         }
 
-        configureLogger(DEFAULT_LOGGER, DEFAULT_LOG_FILE);
+        try {
+            Files.createDirectories(DEFAULT_LOG_FILE.getParent());
+
+            try (InputStream input = AuditService.class
+                    .getClassLoader()
+                    .getResourceAsStream(LOGGING_CONFIG_RESOURCE)) {
+
+                if (input == null) {
+                    throw new IOException(
+                            LOGGING_CONFIG_RESOURCE + " was not found"
+                    );
+                }
+
+                LogManager.getLogManager().readConfiguration(input);
+            }
+        } catch (IOException e) {
+            /*
+             * If the resource cannot be loaded, keep the application usable by
+             * creating the same default log file directly.
+             */
+            configureLogger(DEFAULT_LOGGER, DEFAULT_LOG_FILE);
+            DEFAULT_LOGGER.log(
+                    Level.WARNING,
+                    "Could not load logging.properties; using fallback logging",
+                    e
+            );
+        }
+
         defaultLoggerConfigured = true;
     }
 
