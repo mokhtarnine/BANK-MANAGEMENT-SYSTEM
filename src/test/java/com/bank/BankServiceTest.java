@@ -1,12 +1,14 @@
 package com.bank;
 
 import com.bank.exception.AccountNotEmptyException;
+import com.bank.exception.AccountClosedException;
 import com.bank.exception.BankException;
 import com.bank.exception.InsufficientFundsException;
 import com.bank.model.Account;
 import com.bank.model.CheckingAccount;
 import com.bank.model.Customer;
 import com.bank.model.Employee;
+import com.bank.model.TransactionType;
 import com.bank.service.BankService;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,6 +82,9 @@ class BankServiceTest {
         );
 
         assertEquals(1500.0, account.getBalance(), 0.001);
+        assertEquals(1, account.getTransaction().size());
+        assertEquals(TransactionType.DEPOSIT, account.getTransaction().get(0).getType());
+        assertEquals(1500.0, account.getTransaction().get(0).getBalanceAfter(), 0.001);
     }
 
     @Test
@@ -99,6 +104,9 @@ class BankServiceTest {
         );
 
         assertEquals(700.0, account.getBalance(), 0.001);
+        assertEquals(1, account.getTransaction().size());
+        assertEquals(TransactionType.WITHDRAW, account.getTransaction().get(0).getType());
+        assertEquals(700.0, account.getTransaction().get(0).getBalanceAfter(), 0.001);
     }
 
     @Test
@@ -146,6 +154,47 @@ class BankServiceTest {
 
         assertEquals(700.0, fromAccount.getBalance(), 0.001);
         assertEquals(500.0, toAccount.getBalance(), 0.001);
+        assertEquals(1, fromAccount.getTransaction().size());
+        assertEquals(1, toAccount.getTransaction().size());
+        assertEquals(TransactionType.TRANSFER_OUT, fromAccount.getTransaction().get(0).getType());
+        assertEquals(TransactionType.TRANSFER_IN, toAccount.getTransaction().get(0).getType());
+        assertEquals(700.0, fromAccount.getTransaction().get(0).getBalanceAfter(), 0.001);
+        assertEquals(500.0, toAccount.getTransaction().get(0).getBalanceAfter(), 0.001);
+    }
+
+    @Test
+    void transfer_toClosedAccount_shouldNotRemoveMoneyFromSource() throws BankException {
+        Customer customer = createDefaultCustomer();
+
+        Account fromAccount = bankService.openAccount(
+                customer.getId(),
+                "SAVINGS",
+                1000.0
+        );
+
+        Account closedTargetAccount = bankService.openAccount(
+                customer.getId(),
+                "SAVINGS",
+                0.0
+        );
+
+        bankService.closeAccount(closedTargetAccount.getAccountNumber());
+
+        assertThrows(
+                AccountClosedException.class,
+                () -> bankService.transfer(
+                        fromAccount.getAccountNumber(),
+                        closedTargetAccount.getAccountNumber(),
+                        300.0,
+                        employee
+                )
+        );
+
+        // A failed transfer must leave both balances and histories unchanged.
+        assertEquals(1000.0, fromAccount.getBalance(), 0.001);
+        assertEquals(0.0, closedTargetAccount.getBalance(), 0.001);
+        assertTrue(fromAccount.getTransaction().isEmpty());
+        assertTrue(closedTargetAccount.getTransaction().isEmpty());
     }
 
     @Test

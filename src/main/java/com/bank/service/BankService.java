@@ -1,13 +1,16 @@
 package com.bank.service;
 
 import com.bank.exception.BankException;
+import com.bank.exception.AccountClosedException;
 import com.bank.exception.InvalidAmountException;
 import com.bank.model.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Collection;
+import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.bank.repository.BankRepository;
@@ -98,6 +101,12 @@ public class BankService {
         }
 
         account.deposit(amount, employee);
+        account.addTransaction(createTransaction(
+                TransactionType.DEPOSIT,
+                amount,
+                account,
+                employee
+        ));
         saveDataSafely();
     }
 
@@ -108,12 +117,35 @@ public class BankService {
             throw new IllegalArgumentException("Account not found: " + accountNumber);
         }
         account.withdraw(amount, employee);
+        account.addTransaction(createTransaction(
+                TransactionType.WITHDRAW,
+                amount,
+                account,
+                employee
+        ));
         saveDataSafely();
     }
-    // Add Transfer
-    public void transfer( String fromAccountNumber,String toAccountNumber,double amount,Employee employee) throws BankException {
+    /**
+     * Transfers money between two accounts as one atomic operation.
+     *
+     * Both accounts remain locked during validation, balance changes, and
+     * transaction-history creation. This prevents another thread from changing
+     * either account in the middle of the transfer.
+     */
+    public void transfer(
+            String fromAccountNumber,
+            String toAccountNumber,
+            double amount,
+            Employee employee
+    ) throws BankException {
         if (amount <= 0) {
             throw new InvalidAmountException(amount);
+        }
+
+        if (fromAccountNumber.equals(toAccountNumber)) {
+            throw new IllegalArgumentException(
+                    "Source and target accounts must be different."
+            );
         }
 
         Account fromAccount = findAccount(fromAccountNumber);
@@ -127,13 +159,46 @@ public class BankService {
             throw new IllegalArgumentException("Target account not found: " + toAccountNumber);
         }
 
+        /*
+         * transferLock allows only one transfer to acquire account locks at a
+         * time. Deposits and withdrawals are still protected by each account's
+         * own lock.
+         */
         transferLock.lock();
+        fromAccount.getLock().lock();
+        toAccount.getLock().lock();
 
         try {
+            /*
+             * Validate the target before withdrawing from the source. Because
+             * the target is locked, it cannot become closed after this check.
+             */
+            if (toAccount.isClosed()) {
+                throw new AccountClosedException(
+                        toAccount.getAccountNumber()
+                );
+            }
+
             fromAccount.withdraw(amount, employee);
             toAccount.deposit(amount, employee);
+
+            fromAccount.addTransaction(createTransaction(
+                    TransactionType.TRANSFER_OUT,
+                    amount,
+                    fromAccount,
+                    employee
+            ));
+            toAccount.addTransaction(createTransaction(
+                    TransactionType.TRANSFER_IN,
+                    amount,
+                    toAccount,
+                    employee
+            ));
             saveDataSafely();
         } finally {
+            // Unlock in reverse order so every lock is released after success or failure.
+            toAccount.getLock().unlock();
+            fromAccount.getLock().unlock();
             transferLock.unlock();
         }
     }
@@ -193,6 +258,22 @@ public class BankService {
         }
 
         return account.getTransaction();
+    }
+
+    private Transaction createTransaction(
+            TransactionType type,
+            double amount,
+            Account account,
+            Employee employee
+    ) {
+        return new Transaction(
+                UUID.randomUUID().toString(),
+                type,
+                amount,
+                LocalDateTime.now(),
+                account.getBalance(),
+                employee
+        );
     }
 
     // load data / old data appears again

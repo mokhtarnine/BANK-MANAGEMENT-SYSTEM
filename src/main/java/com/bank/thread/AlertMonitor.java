@@ -3,25 +3,29 @@ package com.bank.thread;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.logging.Logger;
 
 import com.bank.exception.OverdraftAlertException;
 import com.bank.model.Account;
+import com.bank.service.AuditService;
 import com.bank.service.BankService;
 
 public class AlertMonitor implements Runnable {
 
-    private static final Logger LOGGER = Logger.getLogger(AlertMonitor.class.getName());
-
     private final BankService bankService;
+    private final AuditService auditService;
     private final double threshold;
     private final Set<String> alertedAccounts;
     private Consumer<String> alertHandler;
 
     private volatile boolean running;
 
-    public AlertMonitor(BankService bankService, double threshold) {
+    public AlertMonitor(
+            BankService bankService,
+            AuditService auditService,
+            double threshold
+    ) {
         this.bankService = bankService;
+        this.auditService = auditService;
         this.threshold = threshold;
         this.alertedAccounts = new HashSet<>();
         this.running = true;
@@ -46,7 +50,7 @@ public class AlertMonitor implements Runnable {
             try {
                 checkAccount(account);
             } catch (OverdraftAlertException e) {
-                LOGGER.warning(e.getMessage());
+                auditService.recordWarning(e.getMessage());
 
                 if (alertHandler != null) {
                     alertHandler.accept(e.getMessage());

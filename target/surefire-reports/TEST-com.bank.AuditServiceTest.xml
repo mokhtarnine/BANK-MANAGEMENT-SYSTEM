@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.bank.AccountTest" time="0.105" tests="7" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.bank.AuditServiceTest" time="0.133" tests="1" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="25"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -59,11 +59,5 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="69.0"/>
   </properties>
-  <testcase name="deposit_shouldIncreaseBalance" classname="com.bank.AccountTest" time="0.043"/>
-  <testcase name="deposit_invalidAmount_shouldThrowException" classname="com.bank.AccountTest" time="0.006"/>
-  <testcase name="checkingWithdraw_moreThanOverdraftLimit_shouldThrowException" classname="com.bank.AccountTest" time="0.004"/>
-  <testcase name="checkingWithdraw_shouldAllowOverdraftWithinLimit" classname="com.bank.AccountTest" time="0.001"/>
-  <testcase name="savingsWithdraw_shouldDecreaseBalance" classname="com.bank.AccountTest" time="0.003"/>
-  <testcase name="savingsWithdraw_moreThanBalance_shouldThrowException" classname="com.bank.AccountTest" time="0.003"/>
-  <testcase name="closeAccount_nonZeroBalance_shouldThrowException" classname="com.bank.AccountTest" time="0.004"/>
+  <testcase name="recordAction_shouldWriteEmployeeAndActionToLog" classname="com.bank.AuditServiceTest" time="0.13"/>
 </testsuite>

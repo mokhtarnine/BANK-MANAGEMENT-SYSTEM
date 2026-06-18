@@ -9,6 +9,7 @@ import com.bank.model.Customer;
 import com.bank.model.Employee;
 import com.bank.model.Transaction;
 import com.bank.model.TransactionType;
+import com.bank.service.AuditService;
 import com.bank.service.AuthService;
 import com.bank.service.BankService;
 import com.bank.thread.AlertMonitor;
@@ -20,6 +21,7 @@ public class BankController {
 
     private final BankService bankService;
     private final AuthService authService;
+    private final AuditService auditService;
     private Employee currentEmployee;
 
     private final TransactionQueue transactionQueue;
@@ -36,13 +38,22 @@ public class BankController {
     public BankController(boolean persistenceEnabled) {
         this.bankService = new BankService(persistenceEnabled);
         this.authService = new AuthService();
+        this.auditService = new AuditService();
 
         this.transactionQueue = new TransactionQueue();
-        this.transactionWorker = new TransactionWorker(transactionQueue, bankService);
+        this.transactionWorker = new TransactionWorker(
+                transactionQueue,
+                bankService,
+                auditService
+        );
         this.workerThread = new Thread(transactionWorker);
         this.workerThread.start();
 
-        this.alertMonitor = new AlertMonitor(bankService, 100.0);
+        this.alertMonitor = new AlertMonitor(
+                bankService,
+                auditService,
+                100.0
+        );
         this.alertThread = new Thread(alertMonitor);
         this.alertThread.start();
     }
@@ -51,10 +62,17 @@ public class BankController {
         Employee employee = authService.login(username, password);
 
         if (employee == null) {
+            auditService.recordWarning(
+                    "Rejected login attempt for username: " + username
+            );
             return false;
         }
 
         currentEmployee = employee;
+        auditService.recordAction(
+                currentEmployee,
+                "Logged in successfully"
+        );
         return true;
     }
 
@@ -69,13 +87,25 @@ public class BankController {
             String password,
             String email
     ) {
-        return bankService.createCustomer(
-                id,
-                fullName,
-                username,
-                password,
-                email
-        );
+        try {
+            Customer customer = bankService.createCustomer(
+                    id,
+                    fullName,
+                    username,
+                    password,
+                    email
+            );
+
+            auditService.recordAction(
+                    currentEmployee,
+                    "Created customer " + id
+            );
+
+            return customer;
+        } catch (RuntimeException e) {
+            auditService.recordError("Could not create customer " + id, e);
+            throw e;
+        }
     }
 
     public Account openAccount(
@@ -83,37 +113,99 @@ public class BankController {
             String type,
             double initialBalance
     ) {
-        return bankService.openAccount(
-                customerId,
-                type,
-                initialBalance
-        );
+        try {
+            Account account = bankService.openAccount(
+                    customerId,
+                    type,
+                    initialBalance
+            );
+
+            auditService.recordAction(
+                    currentEmployee,
+                    "Opened " + type + " account "
+                            + account.getAccountNumber()
+            );
+
+            return account;
+        } catch (RuntimeException e) {
+            auditService.recordError(
+                    "Could not open account for customer " + customerId,
+                    e
+            );
+            throw e;
+        }
     }
 
     public void closeAccount(String accountNumber) throws BankException {
-        bankService.closeAccount(accountNumber);
+        try {
+            bankService.closeAccount(accountNumber);
+            auditService.recordAction(
+                    currentEmployee,
+                    "Closed account " + accountNumber
+            );
+        } catch (BankException e) {
+            auditService.recordWarning(
+                    "Could not close account " + accountNumber
+                            + ": " + e.getMessage()
+            );
+            throw e;
+        } catch (RuntimeException e) {
+            auditService.recordError(
+                    "Could not close account " + accountNumber,
+                    e
+            );
+            throw e;
+        }
     }
 
     public void deposit(
             String accountNumber,
             double amount
     ) throws BankException {
-        bankService.deposit(
-                accountNumber,
-                amount,
-                currentEmployee
-        );
+        try {
+            bankService.deposit(accountNumber, amount, currentEmployee);
+            auditService.recordAction(
+                    currentEmployee,
+                    "Deposited " + amount + " into account " + accountNumber
+            );
+        } catch (BankException e) {
+            auditService.recordWarning(
+                    "Deposit rejected for account " + accountNumber
+                            + ": " + e.getMessage()
+            );
+            throw e;
+        } catch (RuntimeException e) {
+            auditService.recordError(
+                    "Deposit failed for account " + accountNumber,
+                    e
+            );
+            throw e;
+        }
     }
 
     public void withdraw(
             String accountNumber,
             double amount
     ) throws BankException {
-        bankService.withdraw(
-                accountNumber,
-                amount,
-                currentEmployee
-        );
+        try {
+            bankService.withdraw(accountNumber, amount, currentEmployee);
+            auditService.recordAction(
+                    currentEmployee,
+                    "Withdrew " + amount + " from account " + accountNumber
+            );
+        } catch (BankException e) {
+            auditService.recordWarning(
+                    "Withdrawal rejected for account " + accountNumber
+                            + ": " + e.getMessage()
+            );
+            throw e;
+        } catch (RuntimeException e) {
+            auditService.recordError(
+                    "Withdrawal failed for account " + accountNumber,
+                    e
+            );
+            throw e;
+        }
     }
 
     public void transfer(
@@ -121,12 +213,35 @@ public class BankController {
             String toAccountNumber,
             double amount
     ) throws BankException {
-        bankService.transfer(
-                fromAccountNumber,
-                toAccountNumber,
-                amount,
-                currentEmployee
-        );
+        try {
+            bankService.transfer(
+                    fromAccountNumber,
+                    toAccountNumber,
+                    amount,
+                    currentEmployee
+            );
+
+            auditService.recordAction(
+                    currentEmployee,
+                    "Transferred " + amount
+                            + " from " + fromAccountNumber
+                            + " to " + toAccountNumber
+            );
+        } catch (BankException e) {
+            auditService.recordWarning(
+                    "Transfer rejected from " + fromAccountNumber
+                            + " to " + toAccountNumber
+                            + ": " + e.getMessage()
+            );
+            throw e;
+        } catch (RuntimeException e) {
+            auditService.recordError(
+                    "Transfer failed from " + fromAccountNumber
+                            + " to " + toAccountNumber,
+                    e
+            );
+            throw e;
+        }
     }
 
     public Account findAccount(String accountNumber) {

@@ -17,6 +17,7 @@ import javax.swing.table.DefaultTableModel;
 
 import com.bank.controller.BankController;
 import com.bank.model.Customer;
+import com.bank.model.Transaction;
 
 public class AccountDetailPanel extends JPanel {
 
@@ -26,6 +27,8 @@ public class AccountDetailPanel extends JPanel {
     private final JLabel customerLabel;
     private final JTable accountTable;
     private final DefaultTableModel accountTableModel;
+    private final JTable transactionTable;
+    private final DefaultTableModel transactionTableModel;
     private final MainFrame mainFrame;
 
     public AccountDetailPanel(BankController controller,MainFrame mainFrame) {
@@ -40,6 +43,11 @@ public class AccountDetailPanel extends JPanel {
         );
 
         this.accountTable = new JTable(accountTableModel);
+        this.transactionTableModel = new DefaultTableModel(
+                new Object[]{"ID", "Type", "Amount", "Time", "Balance After", "Employee"},
+                0
+        );
+        this.transactionTable = new JTable(transactionTableModel);
 
         buildLayout();
     }
@@ -49,10 +57,18 @@ public class AccountDetailPanel extends JPanel {
 
         add(customerLabel, BorderLayout.NORTH);
 
-        add(
-                new JScrollPane(accountTable),
-                BorderLayout.CENTER
-        );
+        JPanel centerPanel = new JPanel(new GridLayout(2, 1, 5, 5));
+
+        centerPanel.add(new JScrollPane(accountTable));
+        centerPanel.add(new JScrollPane(transactionTable));
+
+        add(centerPanel, BorderLayout.CENTER);
+
+        accountTable.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                refreshTransactionHistory();
+            }
+        });
 
         JPanel buttonPanel = new JPanel(new GridLayout(1, 6, 5, 5));
 
@@ -112,6 +128,35 @@ public class AccountDetailPanel extends JPanel {
 
         for (Object[] row : rows) {
             accountTableModel.addRow(row);
+        }
+
+        refreshTransactionHistory();
+    }
+
+    private void refreshTransactionHistory() {
+        transactionTableModel.setRowCount(0);
+
+        String accountNumber = getSelectedAccountNumberWithoutMessage();
+
+        if (accountNumber == null) {
+            return;
+        }
+
+        for (Transaction transaction : controller.getTransactionHistory(accountNumber)) {
+            String employeeName = "";
+
+            if (transaction.getPerformedBy() != null) {
+                employeeName = transaction.getPerformedBy().getFullName();
+            }
+
+            transactionTableModel.addRow(new Object[]{
+                    transaction.getTransactionId(),
+                    transaction.getType(),
+                    transaction.getAmount(),
+                    transaction.getTimestamp(),
+                    transaction.getBalanceAfter(),
+                    employeeName
+            });
         }
     }
 
@@ -201,6 +246,18 @@ public class AccountDetailPanel extends JPanel {
                     this,
                     "Please select an account first."
             );
+            return null;
+        }
+
+        return accountTableModel
+                .getValueAt(selectedRow, 0)
+                .toString();
+    }
+
+    private String getSelectedAccountNumberWithoutMessage() {
+        int selectedRow = accountTable.getSelectedRow();
+
+        if (selectedRow == -1) {
             return null;
         }
 

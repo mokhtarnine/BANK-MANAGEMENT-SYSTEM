@@ -12,14 +12,21 @@ import java.util.stream.Collectors;
 
 public class DatabaseManager {
 
-    private static final String DATABASE_URL = "jdbc:sqlite:bank.db";
+    private static final String DEFAULT_DATABASE_URL = "jdbc:sqlite:bank.db";
+
+    private final String databaseUrl;
 
     public DatabaseManager() {
+        this(DEFAULT_DATABASE_URL);
+    }
+
+    public DatabaseManager(String databaseUrl) {
+        this.databaseUrl = databaseUrl;
         initializeDatabase();
     }
 
     public Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(DATABASE_URL);
+        return DriverManager.getConnection(databaseUrl);
     }
 
     private void initializeDatabase() {

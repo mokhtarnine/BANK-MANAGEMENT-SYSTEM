@@ -2,26 +2,25 @@ package com.bank.thread;
 
 import com.bank.exception.BankException;
 import com.bank.model.TransactionType;
+import com.bank.service.AuditService;
 import com.bank.service.BankService;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class TransactionWorker implements Runnable {
 
-    private static final Logger LOGGER =  Logger.getLogger(TransactionWorker.class.getName());
-
     private final TransactionQueue queue;
     private final BankService bankService;
+    private final AuditService auditService;
 
     private volatile boolean running;
 
     public TransactionWorker(
             TransactionQueue queue,
-            BankService bankService
+            BankService bankService,
+            AuditService auditService
     ) {
         this.queue = queue;
         this.bankService = bankService;
+        this.auditService = auditService;
         this.running = true;
     }
 
@@ -37,9 +36,16 @@ public class TransactionWorker implements Runnable {
                 stop();
 
             } catch (BankException e) {
-                LOGGER.log(
-                        Level.WARNING,
-                        "Transaction failed",
+                auditService.recordWarning(
+                        "Queued transaction failed: " + e.getMessage()
+                );
+            } catch (RuntimeException e) {
+                /*
+                 * An unexpected runtime error is logged, but the worker keeps
+                 * running so later requests can still be processed.
+                 */
+                auditService.recordError(
+                        "Unexpected queued transaction error",
                         e
                 );
             }
@@ -55,12 +61,22 @@ public class TransactionWorker implements Runnable {
                     request.getAmount(),
                     request.getEmployee()
             );
+            auditService.recordAction(
+                    request.getEmployee(),
+                    "Queued deposit of " + request.getAmount()
+                            + " into " + request.getFromAccount()
+            );
 
         } else if (type == TransactionType.WITHDRAW) {
             bankService.withdraw(
                     request.getFromAccount(),
                     request.getAmount(),
                     request.getEmployee()
+            );
+            auditService.recordAction(
+                    request.getEmployee(),
+                    "Queued withdrawal of " + request.getAmount()
+                            + " from " + request.getFromAccount()
             );
 
         } else if (type == TransactionType.TRANSFER_OUT) {
@@ -70,9 +86,17 @@ public class TransactionWorker implements Runnable {
                     request.getAmount(),
                     request.getEmployee()
             );
+            auditService.recordAction(
+                    request.getEmployee(),
+                    "Queued transfer of " + request.getAmount()
+                            + " from " + request.getFromAccount()
+                            + " to " + request.getToAccount()
+            );
 
         } else {
-            LOGGER.warning("Unsupported transaction type: " + type);
+            auditService.recordWarning(
+                    "Unsupported transaction type: " + type
+            );
         }
     }
 
