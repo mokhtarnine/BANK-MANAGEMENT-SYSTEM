@@ -25,6 +25,8 @@ public class AccountDetailPanel extends JPanel {
     private Customer customer;
 
     private final JLabel customerLabel;
+    private final JTextField accountSearchField;
+    private final JComboBox<String> accountTypeFilter;
     private final JTable accountTable;
     private final DefaultTableModel accountTableModel;
     private final JTable transactionTable;
@@ -36,6 +38,10 @@ public class AccountDetailPanel extends JPanel {
         this.mainFrame = mainFrame;
 
         this.customerLabel = new JLabel("No customer selected");
+        this.accountSearchField = new JTextField();
+        this.accountTypeFilter = new JComboBox<>(
+                new String[]{"ALL", "CHECKING", "SAVINGS"}
+        );
 
         this.accountTableModel = new DefaultTableModel(
                 new Object[]{"Account Number", "Type", "Balance", "Closed"},
@@ -55,7 +61,34 @@ public class AccountDetailPanel extends JPanel {
     private void buildLayout() {
         setLayout(new BorderLayout());
 
-        add(customerLabel, BorderLayout.NORTH);
+        JPanel topPanel = new JPanel(new BorderLayout(5, 5));
+        topPanel.add(customerLabel, BorderLayout.NORTH);
+
+        JPanel filterPanel = new JPanel(new GridLayout(1, 6, 5, 5));
+
+        filterPanel.add(new JLabel("Account Number:"));
+        filterPanel.add(accountSearchField);
+        filterPanel.add(new JLabel("Type:"));
+        filterPanel.add(accountTypeFilter);
+
+        JButton searchButton = new JButton("Search");
+        searchButton.addActionListener(e -> refreshAccounts());
+
+        JButton clearButton = new JButton("Clear");
+        clearButton.addActionListener(e -> clearAccountFilters());
+
+        filterPanel.add(searchButton);
+        filterPanel.add(clearButton);
+
+        /*
+         * Pressing Enter in the account-number field applies the filters
+         * without requiring the user to click the Search button.
+         */
+        accountSearchField.addActionListener(e -> refreshAccounts());
+        accountTypeFilter.addActionListener(e -> refreshAccounts());
+
+        topPanel.add(filterPanel, BorderLayout.SOUTH);
+        add(topPanel, BorderLayout.NORTH);
 
         JPanel centerPanel = new JPanel(new GridLayout(2, 1, 5, 5));
 
@@ -124,13 +157,26 @@ public class AccountDetailPanel extends JPanel {
             return;
         }
 
-        Object[][] rows = controller.getCustomerAccountTableData(customer.getId());
+        Object[][] rows = controller.getCustomerAccountTableData(
+                customer.getId(),
+                accountSearchField.getText(),
+                (String) accountTypeFilter.getSelectedItem()
+        );
 
         for (Object[] row : rows) {
             accountTableModel.addRow(row);
         }
 
         refreshTransactionHistory();
+    }
+
+    /**
+     * Restores the account table to its unfiltered state.
+     */
+    private void clearAccountFilters() {
+        accountSearchField.setText("");
+        accountTypeFilter.setSelectedItem("ALL");
+        refreshAccounts();
     }
 
     private void refreshTransactionHistory() {

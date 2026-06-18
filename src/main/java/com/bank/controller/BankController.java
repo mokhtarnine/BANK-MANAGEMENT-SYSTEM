@@ -1,6 +1,7 @@
 package com.bank.controller;
 
 import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.bank.exception.BankException;
@@ -335,6 +336,25 @@ public class BankController {
     }
 
     public Object[][] getCustomerAccountTableData(String customerId) {
+        return getCustomerAccountTableData(customerId, "", "ALL");
+    }
+
+    /**
+     * Builds account-table rows for one customer using optional filters.
+     *
+     * The GUI receives simple table data and does not need to inspect Account
+     * objects or call BankService directly.
+     *
+     * @param customerId customer whose accounts should be displayed
+     * @param accountNumberKeyword full or partial account number
+     * @param accountType ALL, CHECKING, or SAVINGS
+     * @return rows containing account number, type, balance, and closed status
+     */
+    public Object[][] getCustomerAccountTableData(
+            String customerId,
+            String accountNumberKeyword,
+            String accountType
+    ) {
         Customer selectedCustomer = null;
 
         for (Customer customer : bankService.getAllCustomers()) {
@@ -348,12 +368,35 @@ public class BankController {
             return new Object[0][0];
         }
 
-        List<Account> accounts = selectedCustomer.getAccounts();
+        String normalizedKeyword = accountNumberKeyword == null
+                ? ""
+                : accountNumberKeyword.trim().toLowerCase();
 
-        Object[][] data = new Object[accounts.size()][4];
+        String normalizedType = accountType == null
+                ? "ALL"
+                : accountType.trim().toUpperCase();
 
-        for (int i = 0; i < accounts.size(); i++) {
-            Account account = accounts.get(i);
+        List<Account> matchingAccounts = new ArrayList<>();
+
+        for (Account account : selectedCustomer.getAccounts()) {
+            String typeName = getAccountTypeName(account);
+
+            boolean numberMatches = account.getAccountNumber()
+                    .toLowerCase()
+                    .contains(normalizedKeyword);
+
+            boolean typeMatches = normalizedType.equals("ALL")
+                    || typeName.equals(normalizedType);
+
+            if (numberMatches && typeMatches) {
+                matchingAccounts.add(account);
+            }
+        }
+
+        Object[][] data = new Object[matchingAccounts.size()][4];
+
+        for (int i = 0; i < matchingAccounts.size(); i++) {
+            Account account = matchingAccounts.get(i);
 
             data[i][0] = account.getAccountNumber();
             data[i][1] = getAccountTypeName(account);

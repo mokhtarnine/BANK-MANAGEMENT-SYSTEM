@@ -321,6 +321,39 @@ class BankControllerTest {
         assertEquals(500.0, toAccount.getBalance(), 0.001);
     }
 
+    @Test
+    void getCustomerAccountTableData_shouldFilterByNumberAndType() {
+        Customer customer = controller.createCustomer(
+                "C001",
+                "Ahmed",
+                "ahmed",
+                "1234",
+                "ahmed@gmail.com"
+        );
+
+        Account checkingAccount = controller.openAccount(
+                customer.getId(),
+                "CHECKING",
+                1000.0
+        );
+
+        controller.openAccount(
+                customer.getId(),
+                "SAVINGS",
+                200.0
+        );
+
+        Object[][] rows = controller.getCustomerAccountTableData(
+                customer.getId(),
+                checkingAccount.getAccountNumber(),
+                "CHECKING"
+        );
+
+        assertEquals(1, rows.length);
+        assertEquals(checkingAccount.getAccountNumber(), rows[0][0]);
+        assertEquals("CHECKING", rows[0][1]);
+    }
+
     private void waitForBalance(Account account, double expectedBalance) throws InterruptedException {
         int attempts = 0;
 

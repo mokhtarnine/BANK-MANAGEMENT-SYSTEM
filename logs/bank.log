@@ -411,3 +411,41 @@ INFO: Admin User (ADMIN) - Queued deposit of 500.0 into ACC1
 2026-06-18 19:36:22 INFO: Admin User (ADMIN) - Created customer C001
 2026-06-18 19:36:22 INFO: Admin User (ADMIN) - Opened SAVINGS account ACC1
 2026-06-18 19:36:22 INFO: Admin User (ADMIN) - Queued deposit of 500.0 into ACC1
+2026-06-18 19:40:15 INFO: SYSTEM - Created customer C001
+2026-06-18 19:40:15 INFO: SYSTEM - Opened CHECKING account ACC1
+2026-06-18 19:40:15 INFO: SYSTEM - Opened SAVINGS account ACC2
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Logged in successfully
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Created customer C001
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Opened SAVINGS account ACC1
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Deposited 500.0 into account ACC1
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Logged in successfully
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Created customer C001
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Opened SAVINGS account ACC1
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Queued withdrawal of 300.0 from ACC1
+2026-06-18 19:40:15 WARNING: Rejected login attempt for username: admin
+2026-06-18 19:40:15 INFO: SYSTEM - Created customer C001
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Logged in successfully
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Created customer C001
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Opened SAVINGS account ACC1
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Withdrew 300.0 from account ACC1
+2026-06-18 19:40:15 INFO: SYSTEM - Created customer C001
+2026-06-18 19:40:15 INFO: SYSTEM - Opened SAVINGS account ACC1
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Logged in successfully
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Created customer C001
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Opened SAVINGS account ACC1
+2026-06-18 19:40:15 WARNING: Withdrawal rejected for account ACC1: Requested 1200.00 but only 1000.00 available
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Logged in successfully
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Created customer C001
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Opened CHECKING account ACC1
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Opened SAVINGS account ACC2
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Queued transfer of 300.0 from ACC1 to ACC2
+2026-06-18 19:40:15 INFO: Admin User (ADMIN) - Logged in successfully
+2026-06-18 19:40:16 INFO: Admin User (ADMIN) - Logged in successfully
+2026-06-18 19:40:16 INFO: Admin User (ADMIN) - Created customer C001
+2026-06-18 19:40:16 INFO: Admin User (ADMIN) - Opened CHECKING account ACC1
+2026-06-18 19:40:16 INFO: Admin User (ADMIN) - Opened SAVINGS account ACC2
+2026-06-18 19:40:16 INFO: Admin User (ADMIN) - Transferred 300.0 from ACC1 to ACC2
+2026-06-18 19:40:16 INFO: Admin User (ADMIN) - Logged in successfully
+2026-06-18 19:40:16 INFO: Admin User (ADMIN) - Created customer C001
+2026-06-18 19:40:16 INFO: Admin User (ADMIN) - Opened SAVINGS account ACC1
+2026-06-18 19:40:16 INFO: Admin User (ADMIN) - Queued deposit of 500.0 into ACC1
