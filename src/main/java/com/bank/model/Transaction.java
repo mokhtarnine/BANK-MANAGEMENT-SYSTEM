@@ -2,7 +2,10 @@ package com.bank.model;
 
 import java.time.LocalDateTime;
 
+
+
 public final class Transaction{
+    /*this classe of transactoin it emplemented for make transaction between accounts */
     private final String transactionId ;
     private final TransactionType type;
     private final double amount;

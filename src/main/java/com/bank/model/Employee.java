@@ -1,6 +1,7 @@
 package com.bank.model;
 
 public class Employee extends User{
+    /*this classe of employee */
     private String role;
 
     public Employee (String id,String fullName,String username,String password,String role){

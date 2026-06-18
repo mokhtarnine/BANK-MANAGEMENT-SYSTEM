@@ -1,10 +1,10 @@
 package com.bank.model;
 
-import com.bank.model.User;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Customer extends User {
+    /*this classe of cutomer  */
 
     private String email;
     private  List<Account> accounts;

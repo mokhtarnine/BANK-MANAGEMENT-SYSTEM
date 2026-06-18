@@ -6,6 +6,7 @@ import com.bank.exception.InsufficientFundsException;
 import com.bank.exception.InvalidAmountException;
 
 public class CheckingAccount extends Account{
+    /*classe of type of ckecking account  */
     public double overdraftLimit;
 
     public CheckingAccount (String accountNumber, double balance,double overdraftLimit){

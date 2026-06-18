@@ -1,21 +1,22 @@
 package  com.bank.model;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+
 import com.bank.exception.AccountClosedException;
 import com.bank.exception.AccountNotEmptyException;
 import com.bank.exception.BankException;
 import com.bank.exception.InvalidAmountException;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
-
 
 public abstract class Account {
+    /*this abstract classe for many type of account and transaction */
     protected  String accountNumber;
     protected double balance;
     protected boolean closed;
     protected List<Transaction> transactions;
-    protected final ReentrantLock lock;
+    protected final ReentrantLock lock; // for multiple threads at same time
 
     public Account(String accountNumber, double balance){
         this.accountNumber = accountNumber;
@@ -41,6 +42,7 @@ public abstract class Account {
             lock.unlock();
         }
     }
+    // here we don't implement of withdraw methode because it change behaver with diffrent classe
     public abstract void withdraw(double amount, Employee employee) throws BankException;
     public void closeAccount() throws BankException {
         lock.lock();

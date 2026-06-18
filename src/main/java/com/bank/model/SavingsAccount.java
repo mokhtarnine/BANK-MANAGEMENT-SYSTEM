@@ -6,6 +6,7 @@ import com.bank.exception.InsufficientFundsException;
 import com.bank.exception.InvalidAmountException;
 
 public class SavingsAccount extends  Account {
+    /*classe fo sabing type of accountss */
     private  double interestRate ;
 
     public SavingsAccount(String accountNumber, double balance,double interestRate){
@@ -19,6 +20,7 @@ public class SavingsAccount extends  Account {
     public void setInterestRate(double interestRate){
         this.interestRate = interestRate;
     }
+    // methode of interest change about how interestRate of customer
     public void applyInterest(){
         lock.lock();
         try {

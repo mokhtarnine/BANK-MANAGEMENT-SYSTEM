@@ -1,7 +1,7 @@
 package  com.bank.model;
 
 public abstract class User {
-    //Attribute 
+    /*this abstract classe for customer and employee */
     protected String id;
     protected String username;
     protected String password;

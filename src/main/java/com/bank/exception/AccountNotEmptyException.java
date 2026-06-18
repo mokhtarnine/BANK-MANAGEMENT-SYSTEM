@@ -1,6 +1,7 @@
 package com.bank.exception;
 
 public class AccountNotEmptyException extends BankException {
+    // this exception if account still has a balance make message for tell use can't close it.
     private final String accountNumber;
     private final double balance;
 
