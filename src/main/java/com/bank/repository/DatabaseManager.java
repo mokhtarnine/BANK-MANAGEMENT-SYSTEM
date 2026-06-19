@@ -11,15 +11,26 @@ import java.sql.Statement;
 import java.util.stream.Collectors;
 
 public class DatabaseManager {
+    /**
+         * Manages the SQLite database connection and initialization.
+         *
+         * This class is responsible for:
+         * - storing the database URL
+         * - opening JDBC connections
+         * - loading the SQL schema file
+         * - creating database tables when the application starts
+         *
+         * It is used by repository classes to access the database safely.
+         */
 
-    private static final String DEFAULT_DATABASE_URL = "jdbc:sqlite:bank.db";
+    private static final String DEFAULT_DATABASE_URL = "jdbc:sqlite:bank.db"; // This is JDBC connection URL.
 
     private final String databaseUrl;
-
+    //constructer 1 nomber one if user gives nothing use default databse
     public DatabaseManager() {
         this(DEFAULT_DATABASE_URL);
     }
-
+    // contructer 2 if user give url
     public DatabaseManager(String databaseUrl) {
         this.databaseUrl = databaseUrl;
         initializeDatabase();
@@ -37,8 +48,9 @@ public class DatabaseManager {
             String schemaSql = loadSchemaSql();
 
             for (String sql : schemaSql.split(";")) {
+                // romve spacds ,tabs, new lines
                 String trimmedSql = sql.trim();
-
+                // skip empty SQL
                 if (!trimmedSql.isEmpty()) {
                     statement.execute(trimmedSql);
                 }
@@ -51,7 +63,6 @@ public class DatabaseManager {
             );
         }
     }
-
     private String loadSchemaSql() {
         InputStream inputStream = getClass()
                 .getClassLoader()

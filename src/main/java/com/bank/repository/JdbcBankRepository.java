@@ -1,5 +1,14 @@
 package com.bank.repository;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import com.bank.exception.BankException;
 import com.bank.exception.RepositoryException;
 import com.bank.model.Account;
@@ -10,16 +19,16 @@ import com.bank.model.SavingsAccount;
 import com.bank.model.Transaction;
 import com.bank.model.TransactionType;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-
 public class JdbcBankRepository implements BankRepository {
+    /**
+
+     * This class is responsible for:*- storing banking data in SQLite
+                                    * - retrieving customers and accounts
+                                    * - updating account balances
+                                    * - saving transactions
+                                    * - executing SQL queries through JDBC
+     * It uses DatabaseManager to manage database connections.
+     */
 
     private final DatabaseManager databaseManager;
 
@@ -54,10 +63,10 @@ public class JdbcBankRepository implements BankRepository {
                 insertStatement.setString(3, customer.getUsername());
                 insertStatement.setString(4, customer.getPassword());
                 insertStatement.setString(5, customer.getEmail());
-                insertStatement.addBatch();
+                insertStatement.addBatch(); // this does not insert immediately
             }
 
-            insertStatement.executeBatch();
+            insertStatement.executeBatch(); // execute all together
 
         } catch (SQLException e) {
             throw new RepositoryException("Failed to save customers", e);

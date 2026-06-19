@@ -1,7 +1,7 @@
 package com.bank.controller;
 
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.bank.exception.BankException;
@@ -19,7 +19,25 @@ import com.bank.thread.TransactionRequest;
 import com.bank.thread.TransactionWorker;
 
 public class BankController {
-
+    /**
+ * Central controller of the Bank Management System.
+ *
+ * This class acts as the communication layer between the graphical
+ * user interface and the service layer.
+ *
+ * Responsibilities:
+ * - manage employee authentication
+ * - create and manage customers
+ * - create and manage accounts
+ * - execute banking operations
+ * - coordinate transaction processing
+ * - record audit actions and warnings
+ * - manage background worker threads
+ *
+ * The controller delegates business rules to BankService and avoids
+ * direct interaction between the GUI and persistence layer.
+ */
+            
     private final BankService bankService;
     private final AuthService authService;
     private final AuditService auditService;

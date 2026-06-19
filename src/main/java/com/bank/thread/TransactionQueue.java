@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class TransactionQueue {
+    // TransactionQueue protects transaction order and makes threads communicate safely.
 
     private final Queue<TransactionRequest> queue;
 

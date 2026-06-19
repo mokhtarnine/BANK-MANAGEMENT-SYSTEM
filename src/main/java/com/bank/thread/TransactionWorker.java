@@ -6,6 +6,13 @@ import com.bank.service.AuditService;
 import com.bank.service.BankService;
 
 public class TransactionWorker implements Runnable {
+    /**
+ * Background worker responsible for processing queued transaction requests.
+ *
+ * The worker continuously takes requests from TransactionQueue and executes
+ * them using BankService. Each successful or failed operation is recorded
+ * using AuditService.
+ */
 
     private final TransactionQueue queue;
     private final BankService bankService;

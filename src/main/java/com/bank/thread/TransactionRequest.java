@@ -4,6 +4,7 @@ import com.bank.model.Employee;
 import com.bank.model.TransactionType;
 
 public class TransactionRequest {
+    // Represents a transaction request waiting to be processed by a worker thread.
 
     private final TransactionType type;
     private final String fromAccount;

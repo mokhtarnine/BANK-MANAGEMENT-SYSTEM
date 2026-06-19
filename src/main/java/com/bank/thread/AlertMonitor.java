@@ -10,6 +10,12 @@ import com.bank.service.AuditService;
 import com.bank.service.BankService;
 
 public class AlertMonitor implements Runnable {
+    /**
+         * Background monitoring thread responsible for detecting and recording alerts.
+         *
+         * The monitor executes independently from the GUI and periodically
+         * checks application state for alert conditions.
+         */
 
     private final BankService bankService;
     private final AuditService auditService;
