@@ -1,0 +1,8 @@
+# Keep Maven build files locally, but do not push them
+target/
+
+# Keep VS Code settings locally, but do not push them
+.vscode/
+
+# Compiled Java files
+*.class
