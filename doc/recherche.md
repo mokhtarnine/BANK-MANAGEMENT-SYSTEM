@@ -1,329 +1,298 @@
-# Bank Management System - Project Research
+# Bank Management System - Technical Research
 
-## 1. Project Idea
+## 1. Project Context
 
-The Bank Management System is a Java desktop application that helps manage basic banking operations. The system allows bank employees to manage customers, open accounts, perform transactions, and view transaction history through a graphical interface.
+The Bank Management System (BMS) is a Java desktop application developed for a Java II group project. It simulates the main operations performed by a bank employee:
 
-The project is designed to apply the main concepts studied in Java II, including object-oriented programming, Swing GUI, collections, exception handling, threads, synchronization, unit testing, database storage, and logging.
+- employee authentication;
+- customer creation and search;
+- checking and savings account management;
+- deposits, withdrawals, and transfers;
+- transaction-history consultation;
+- low-balance monitoring;
+- data persistence and audit logging.
 
-## 2. Problem
+The project brings together the principal topics studied during the semester: object-oriented programming, collections, custom exceptions, Swing, threads, synchronization, JDBC, logging, and JUnit 5.
 
-Manual bank management can be slow and difficult to control. Managing customers, accounts, deposits, withdrawals, and transfers manually can lead to errors such as incorrect balances, missing transaction history, or duplicated operations.
+## 2. Problem Studied
 
-Another important problem is concurrent access. In a banking system, two operations can happen at the same time. For example, two transfers can access the same account balance at the same moment. If the system is not synchronized correctly, the balance can become incorrect.
+A banking application must protect data consistency while keeping its interface simple to use. The important problems considered in this project are:
 
-The project also needs to handle invalid operations properly, such as withdrawing more money than available, using a negative amount, or trying to use a closed account.
+- preventing negative or invalid transaction amounts;
+- preventing operations on closed accounts;
+- preventing an account from being closed while it still has money;
+- protecting account balances when several operations run concurrently;
+- ensuring that a transfer either completes fully or makes no balance change;
+- preserving customers, accounts, and transaction history between sessions;
+- showing background warnings without updating Swing components from the wrong thread;
+- separating GUI code from business and database logic.
 
-## 3. Proposed Solution
+## 3. Selected Solution
 
-The proposed solution is to build a desktop banking application using Java Swing.
+The application uses a layered architecture:
 
-The application will provide a graphical interface where the user can create customers, open checking or savings accounts, make deposits, withdrawals, and transfers, and view all transaction history.
+```text
+Swing GUI
+    |
+    v
+BankController
+    |
+    v
+BankService / AuthService / AuditService
+    |
+    v
+BankRepository
+    |
+    v
+SQLite database
+```
 
-The system will use a layered architecture:
+Each layer has one main responsibility:
 
-GUI Layer -> Controller Layer -> Service Layer -> Repository Layer -> Database
+- **GUI layer:** displays information and captures user actions.
+- **Controller layer:** provides the operations used by the GUI and coordinates services and threads.
+- **Service layer:** applies banking rules and creates transaction history.
+- **Repository layer:** saves and loads data with JDBC.
+- **Model layer:** represents users, customers, employees, accounts, and transactions.
+- **Thread layer:** processes queued requests and monitors low balances.
 
-This architecture keeps the project clean because each layer has a specific responsibility.
+This separation makes the program easier to test, explain, and maintain.
 
-- GUI displays data and receives user actions.
-- Controller connects the GUI with the business logic.
-- Service layer contains the main banking rules.
-- Repository layer handles data storage.
-- Database stores customers, accounts, transactions, and alerts.
+## 4. Technologies
 
-## 4. Main Features
-
-The application will include the following features:
-
-- Create and manage customers.
-- Open checking accounts and savings accounts.
-- Display all customers and their accounts.
-- Search customers or accounts.
-- Deposit money into an account.
-- Withdraw money from an account.
-- Transfer money between two accounts.
-- Close an account only if its balance is zero.
-- Store transaction history for each account.
-- Display transaction history in the GUI.
-- Show error messages when an invalid operation happens.
-- Monitor low balances using a background thread.
-- Log transactions and warnings.
-- Save and load data from a database.
-
-## 5. Technologies and Tools
-
-| Part | Tool / Technology |
+| Technology | Use in the project |
 |---|---|
-| Programming language | Java |
-| GUI | Java Swing |
-| Build tool | Maven |
-| Database | SQLite |
-| Database access | JDBC |
-| Testing | JUnit 5 |
-| Logging | java.util.logging.Logger |
-| IDE | IntelliJ IDEA / Eclipse / NetBeans |
-| Version control | Git and GitHub |
+| Java 17 | Main programming language |
+| Java Swing | Desktop graphical interface |
+| FlatLaf | Light modern look and feel for Swing |
+| Maven | Build, dependency management, tests, and application launch |
+| SQLite | Embedded local database stored in `bank.db` |
+| JDBC | Database connections and SQL operations |
+| JUnit 5 | Automated model, service, controller, logging, and repository tests |
+| java.util.logging | Audit actions, warnings, and serious errors |
+| Git | Version control |
 
-## 6. Database
+Main Maven dependencies:
 
-The system will use SQLite as the database.
+- `org.junit.jupiter:junit-jupiter`
+- `org.xerial:sqlite-jdbc`
+- `com.formdev:flatlaf`
 
-SQLite is a good choice for this project because it is simple, lightweight, and does not need a server. The whole database is stored in one local file, for example:
+## 5. Object-Oriented Design
 
-bank.db
+### 5.1 User hierarchy
 
-The database will store the main application data.
+`User` is an abstract base class containing shared fields such as ID, full name, username, and password.
+
+It has two subclasses:
+
+- `Customer`, which owns an email and a list of accounts;
+- `Employee`, which has a bank role such as `ADMIN` or `EMPLOYEE`.
+
+### 5.2 Account hierarchy
+
+`Account` is abstract because withdrawal rules differ between account types.
+
+- `CheckingAccount` supports an overdraft limit.
+- `SavingsAccount` prevents the balance from going below zero and supports an interest rate.
+
+The common `deposit`, `closeAccount`, balance, closed status, transaction list, and lock behavior are stored in `Account`.
+
+### 5.3 Immutable transactions
+
+`Transaction` is declared `final`, and all its fields are `final`. A transaction records:
+
+- a UUID transaction ID;
+- a `TransactionType`;
+- the amount;
+- the timestamp;
+- the balance after the operation;
+- the employee who performed the operation.
+
+The supported transaction types are `DEPOSIT`, `WITHDRAW`, `TRANSFER_IN`, and `TRANSFER_OUT`.
+
+## 6. Collections
+
+The project uses typed collections:
+
+- `HashMap<String, Customer>` for fast customer lookup by ID;
+- `ArrayList<Account>` for all bank accounts;
+- `ArrayList<Account>` inside each customer;
+- `LinkedList<Transaction>` for account transaction history;
+- `LinkedList<TransactionRequest>` through the transaction queue;
+- `HashSet<String>` to avoid repeating the same low-balance alert continuously.
+
+No raw collection types are used.
+
+## 7. Exception Handling
+
+The custom exception hierarchy communicates banking errors clearly:
+
+```text
+BankException
+|- InsufficientFundsException
+|- AccountClosedException
+|- AccountNotEmptyException
+|- OverdraftAlertException
+|- RepositoryException
+```
+
+`InvalidAmountException` extends `RuntimeException` because invalid values such as zero or negative amounts are programming or input errors.
+
+Examples of enforced rules:
+
+- a deposit or withdrawal amount must be positive;
+- a savings withdrawal cannot exceed the balance;
+- a checking withdrawal cannot exceed the balance plus overdraft limit;
+- a closed account cannot receive or send money;
+- an account with a non-zero balance cannot be closed.
+
+The transaction dialog catches different exception types and displays suitable messages with `JOptionPane`.
+
+## 8. Concurrency and Atomic Transfers
+
+### 8.1 Account locks
+
+Each account owns a `ReentrantLock`. Deposit, withdrawal, closing, and interest operations acquire this lock and release it in a `finally` block.
+
+### 8.2 Atomic transfer
+
+`BankService.transfer()` validates both accounts and locks the complete transfer operation. It also locks the source and target accounts before changing either balance.
+
+The target account is validated before withdrawing from the source. Therefore, if the target is closed or another validation fails, the source balance and both transaction histories remain unchanged.
+
+### 8.3 Transaction queue
+
+`TransactionQueue` demonstrates thread communication:
+
+- `enqueue()` adds a request and calls `notifyAll()`;
+- `dequeue()` calls `wait()` while the queue is empty;
+- `TransactionWorker` implements `Runnable` and processes queued requests.
+
+The controller starts the worker thread and provides request methods for deposits, withdrawals, and transfers.
+
+### 8.4 Alert monitor
+
+`AlertMonitor` implements `Runnable` and checks accounts every three seconds. An alert is produced when an account balance falls below the configured threshold of `100.0`.
+
+Previously alerted accounts are tracked to avoid repeating the same warning until their balance returns above the threshold.
+
+Background alerts reach the Swing GUI through a callback. `MainFrame` uses `SwingUtilities.invokeLater()` before updating `AlertLogPanel`, which respects Swing thread-safety rules.
+
+## 9. Persistence with SQLite
+
+SQLite was selected because it is embedded, lightweight, and requires no external database server.
+
+`DatabaseManager`:
+
+- connects to `jdbc:sqlite:bank.db`;
+- reads `src/main/resources/database/schema.sql`;
+- creates missing tables when the application starts.
+
+`JdbcBankRepository` uses:
+
+- `PreparedStatement`;
+- `ResultSet`;
+- try-with-resources;
+- JDBC transactions with commit and rollback;
+- batch inserts;
+- `RepositoryException` to wrap SQL failures.
+
+The real database contains three tables:
 
 ### customers
 
-Stores customer information.
-
-| Field | Description |
-|---|---|
-| id | Customer ID |
-| name | Customer name |
-| email | Customer email |
-
-### employees
-
-Stores employee or user information.
-
-| Field | Description |
-|---|---|
-| id | Employee ID |
-| username | Login username |
-| password | Login password |
-| role | Employee role |
+Stores customer ID, full name, username, password, and email.
 
 ### accounts
 
-Stores account information.
-
-| Field | Description |
-|---|---|
-| account_number | Account number |
-| customer_id | Owner customer ID |
-| account_type | Checking or Savings |
-| balance | Current balance |
-| closed | Account status |
+Stores the customer relationship, account type, balance, closed status, checking overdraft limit, and savings interest rate.
 
 ### transactions
 
-Stores transaction history.
+Stores transaction history and the employee information connected to each transaction.
 
-| Field | Description |
-|---|---|
-| id | Transaction ID |
-| account_number | Related account |
-| transaction_type | Deposit, withdrawal, transfer |
-| amount | Transaction amount |
-| balance_after | Balance after transaction |
-| timestamp | Date and time |
-| employee_id | Employee who made the transaction |
+The current implementation does not use separate `employees` or `alerts` tables. Default employees are created by `AuthService`, alerts are shown in the GUI and written to the audit log, and transaction employee details are stored with transaction records.
 
-### alerts
+## 10. Graphical Interface
 
-Stores warnings such as low-balance alerts.
+The application starts with `LoginFrame`. After successful authentication, `MainFrame` displays four tabs:
 
-| Field | Description |
-|---|---|
-| id | Alert ID |
-| account_number | Related account |
-| message | Alert message |
-| timestamp | Date and time |
+- **Dashboard:** total customers, total accounts, and aggregate balance;
+- **Customers:** customer table, search, creation, refresh, and account navigation;
+- **Accounts:** account search and type filter, account table, transaction history, and banking operations;
+- **Alerts:** real-time low-balance and test alerts.
 
-Database access should be placed in the repository layer, not inside the GUI.
+`TransactionDialog` supports deposits, withdrawals, and transfers.
 
-Correct flow:
+The GUI performs banking operations through `BankController`. It does not access the repository or service layer directly.
 
-MainFrame -> BankController -> BankService -> BankRepository -> SQLite
+FlatLaf provides the base light theme. `gui/style/UIStyle.java` centralizes:
 
-This makes the project easier to maintain and easier to explain during the presentation.
+- Segoe UI fonts;
+- background and title colors;
+- button appearance;
+- table appearance;
+- shared panel padding.
 
-## 7. Project Architecture
+## 11. Authentication and Audit Logging
 
-The project will be divided into packages.
+`AuthService` currently provides two demonstration employees:
 
-- controller
-- exception
-- gui
-- model
-- repository
-- service
-- thread
+| Username | Password | Role |
+|---|---|---|
+| `admin` | `admin123` | ADMIN |
+| `employee` | `emp123` | EMPLOYEE |
 
-### model
+These accounts are stored in memory and are intended for a student demonstration, not production security.
 
-Contains the main data classes:
+`AuditService` writes to `logs/bank.log` using `logging.properties`:
 
-- Customer
-- Employee
-- Account
-- CheckingAccount
-- SavingsAccount
-- Transaction
-- TransactionType
+- `INFO` for successful actions;
+- `WARNING` for rejected operations, login failures, and low-balance alerts;
+- `SEVERE` for unexpected errors.
 
-### gui
+The log file uses append mode, so earlier records are preserved.
 
-Contains Swing interface classes:
+## 12. Testing Strategy
 
-- MainFrame
-- DashboardPanel
-- CustomerListPanel
-- AccountDetailPanel
-- TransactionDialog
-- AlertLogPanel
+The test suite covers:
 
-### controller
+- deposits and invalid amounts;
+- normal and rejected withdrawals;
+- checking-account overdraft behavior;
+- account closing rules;
+- customer creation and data;
+- controller authentication and delegation;
+- synchronous transactions;
+- queued background transactions;
+- account-table filtering;
+- atomic transfer failure;
+- SQLite save/load behavior;
+- logging configuration and audit-file output.
 
-Contains:
+Tests that do not need persistence use `BankService(false)` or `BankController(false)`. Repository tests use a temporary SQLite database so the real `bank.db` file is not modified.
 
-- BankController
+The current complete Maven run executes 34 tests with no failures or errors.
 
-The controller receives actions from the GUI and calls the service layer.
+## 13. Current Limitations and Future Improvements
 
-### service
+The following points can be presented as known limitations:
 
-Contains:
+- employee accounts are hard-coded and are not managed in the database;
+- passwords are stored as plain text and are suitable only for demonstration;
+- alerts are not stored in a dedicated database table;
+- the alert threshold is fixed in the controller;
+- savings interest exists in the model but has no GUI operation;
+- account numbers are generated from the current account-list size;
+- queued transaction errors are logged but are not returned to the GUI;
+- `EmployeeTest.java` is currently empty;
+- more parameterized and exception-message tests can be added.
 
-- BankService
-- AuthService
-- AuditService
+Possible future work includes password hashing, employee management, configurable alerts, stronger account-number generation, alert persistence, and more complete test coverage.
 
-The service layer contains the main business logic.
+## 14. Conclusion
 
-### repository
+The project demonstrates a complete multi-layer Java desktop application. It combines Swing and FlatLaf for the interface, collections for in-memory state, custom exceptions for business rules, locks and background threads for concurrency, SQLite/JDBC for persistence, logging for audit records, and JUnit 5 for verification.
 
-Contains:
-
-- BankRepository
-- JdbcBankRepository
-- DatabaseManager
-
-This layer saves and loads data from SQLite.
-
-### exception
-
-Contains custom exceptions:
-
-- BankException
-- InsufficientFundsException
-- AccountClosedException
-- InvalidAmountException
-- OverdraftAlertException
-
-### thread
-
-Contains thread-related classes:
-
-- AlertMonitor
-- TransactionQueue
-- TransactionWorker
-- TransactionRequest
-
-## 8. Important Business Rules
-
-The application must respect these rules:
-
-- Deposit amount must be positive.
-- Withdrawal amount must be positive.
-- A withdrawal cannot make the balance negative.
-- A transfer must remove money from one account and add it to another account.
-- Transfer must be synchronized to avoid race conditions.
-- A closed account cannot be used for transactions.
-- An account can be closed only if its balance is zero.
-- Each transaction must be saved in history.
-- The GUI must show clear error messages.
-
-## 9. Threads and Synchronization
-
-The project will use threads in two ways.
-
-First, an AlertMonitor thread will run in the background and check if some account balances are below a limit.
-
-Second, a TransactionQueue and TransactionWorker will be used to process transaction requests. This will demonstrate the use of wait() and notifyAll().
-
-Transfers must also be synchronized to protect account balances when two operations happen at the same time.
-
-## 10. Implementation Steps
-
-The project can be implemented using these steps:
-
-1. Create the Maven project.
-2. Create the package structure.
-3. Create model classes such as Customer, Account, CheckingAccount, SavingsAccount, and Transaction.
-4. Create custom exceptions.
-5. Create the database using SQLite.
-6. Create DatabaseManager to connect to the database and create tables.
-7. Create BankRepository and JdbcBankRepository.
-8. Create BankService with banking logic.
-9. Implement deposit, withdrawal, transfer, and close account.
-10. Create JUnit tests for the service and model classes.
-11. Create the main Swing window.
-12. Create GUI panels and transaction dialog.
-13. Connect GUI actions to BankController.
-14. Display customers, accounts, and transaction history in tables.
-15. Add the alert monitor thread.
-16. Add transaction queue and worker.
-17. Add logging.
-18. Test the full application.
-19. Prepare the report and final demo.
-
-## 11. Task Split
-
-The work can be divided between two members.
-
-### Member 1: Backend
-
-Responsible for:
-
-- model
-- service
-- repository
-- database
-- exceptions
-- threads
-- JUnit tests
-
-Main tasks:
-
-- Create model classes.
-- Create database tables.
-- Implement repository classes.
-- Implement banking logic.
-- Implement exceptions.
-- Implement transaction synchronization.
-- Write unit tests.
-
-### Member 2: Frontend
-
-Responsible for:
-
-- gui
-- controller
-- user interaction
-- tables
-- forms
-- dialogs
-
-Main tasks:
-
-- Create Swing windows and panels.
-- Create transaction dialog.
-- Connect buttons to controller.
-- Display customers and accounts.
-- Display transaction history.
-- Show error messages.
-- Refresh GUI after operations.
-
-Both members should work together on testing, debugging, GitHub, documentation, and the final presentation.
-
-## 12. Conclusion
-
-This project is a complete Java desktop application for managing bank customers, accounts, and transactions.
-
-It uses Java Swing for the interface, SQLite for data storage, JDBC for database access, JUnit for testing, and Java threads for concurrent operations.
-
-The project is useful because it combines many important Java concepts in one real application: object-oriented design, GUI, collections, exceptions, database, threads, tests, and logging.
+The most important design decision is separation of responsibilities: the GUI communicates through the controller, business rules remain in the service and model layers, and SQL remains in the repository layer.
