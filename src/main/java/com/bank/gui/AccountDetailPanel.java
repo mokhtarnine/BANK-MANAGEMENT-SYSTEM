@@ -178,7 +178,8 @@ public class AccountDetailPanel extends JPanel {
         accountTypeFilter.setSelectedItem("ALL");
         refreshAccounts();
     }
-
+    //Reloads account data for the selected customer., Applies active search and type filters and updates,the account table contents.
+ 
     private void refreshTransactionHistory() {
         transactionTableModel.setRowCount(0);
 
@@ -311,7 +312,7 @@ public class AccountDetailPanel extends JPanel {
                 .getValueAt(selectedRow, 0)
                 .toString();
     }
-
+    // Opens a transaction dialog for the selected account supports deposit, withdraw, transfer.
     private void openTransactionDialog(String transactionType) {
         String accountNumber = getSelectedAccountNumber();
 
