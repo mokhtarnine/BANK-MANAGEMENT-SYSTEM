@@ -1,5 +1,6 @@
 package com.bank.gui;
 
+
 import java.awt.BorderLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -9,6 +10,7 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
 import com.bank.controller.BankController;
+import com.bank.gui.style.UIStyle;
 
 public class MainFrame extends JFrame {
 
@@ -41,6 +43,7 @@ public class MainFrame extends JFrame {
         setSize(1000, 650);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        getContentPane().setBackground(UIStyle.BACKGROUND_COLOR);
     }
 
     private void buildLayout() {
@@ -52,7 +55,12 @@ public class MainFrame extends JFrame {
         tabs.addTab("Alerts", alertLogPanel);
         
         tabs.addChangeListener(e -> refreshSelectedTab());
-        add(tabs, BorderLayout.CENTER);
+
+        // Container that provides background color and padding around the tabs.
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        UIStyle.stylePanel(contentPanel);
+        contentPanel.add(tabs, BorderLayout.CENTER);
+        add(contentPanel, BorderLayout.CENTER);
     }
 
     private void refreshSelectedTab() {

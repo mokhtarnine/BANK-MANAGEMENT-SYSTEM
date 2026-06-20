@@ -16,6 +16,7 @@ import com.bank.exception.AccountClosedException;
 import com.bank.exception.BankException;
 import com.bank.exception.InsufficientFundsException;
 import com.bank.exception.InvalidAmountException;
+import com.bank.gui.style.UIStyle;
 
 public class TransactionDialog extends JDialog {
 
@@ -54,15 +55,28 @@ public class TransactionDialog extends JDialog {
     private void configureDialog() {
         setSize(400, 220);
         setLocationRelativeTo(getParent());
+        setResizable(false);
+        getContentPane().setBackground(UIStyle.BACKGROUND_COLOR);
     }
 
     private void buildLayout() {
         setLayout(new BorderLayout());
 
+        JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
+        UIStyle.stylePanel(contentPanel);
+
         JPanel formPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+        formPanel.setBackground(UIStyle.BACKGROUND_COLOR);
+
+        JLabel accountValueLabel = new JLabel(accountNumber);
+        accountValueLabel.setFont(UIStyle.NORMAL_FONT);
+
+        amountField.setFont(UIStyle.NORMAL_FONT);
+        targetAccountField.setFont(UIStyle.NORMAL_FONT);
+        
 
         formPanel.add(new JLabel("Account:"));
-        formPanel.add(new JLabel(accountNumber));
+        formPanel.add(accountValueLabel);
 
         formPanel.add(new JLabel("Amount:"));
         formPanel.add(amountField);
@@ -73,10 +87,13 @@ public class TransactionDialog extends JDialog {
         }
 
         JButton confirmButton = new JButton("Confirm");
+        UIStyle.styleButton(confirmButton);
         confirmButton.addActionListener(e -> performTransaction());
 
-        add(formPanel, BorderLayout.CENTER);
-        add(confirmButton, BorderLayout.SOUTH);
+        contentPanel.add(formPanel, BorderLayout.CENTER);
+        contentPanel.add(confirmButton, BorderLayout.SOUTH);
+
+        add(contentPanel, BorderLayout.CENTER);
     }
 
     private void performTransaction() {

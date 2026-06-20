@@ -16,6 +16,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 import com.bank.controller.BankController;
+import com.bank.gui.style.UIStyle;
 import com.bank.model.Customer;
 import com.bank.model.Transaction;
 
@@ -60,11 +61,19 @@ public class AccountDetailPanel extends JPanel {
 
     private void buildLayout() {
         setLayout(new BorderLayout());
+        UIStyle.stylePanel(this);
+
+        UIStyle.styleTitle(customerLabel);
 
         JPanel topPanel = new JPanel(new BorderLayout(5, 5));
+        topPanel.setBackground(UIStyle.BACKGROUND_COLOR);
         topPanel.add(customerLabel, BorderLayout.NORTH);
 
         JPanel filterPanel = new JPanel(new GridLayout(1, 6, 5, 5));
+        filterPanel.setBackground(UIStyle.BACKGROUND_COLOR);
+
+        accountSearchField.setFont(UIStyle.NORMAL_FONT);
+        accountTypeFilter.setFont(UIStyle.NORMAL_FONT);
 
         filterPanel.add(new JLabel("Account Number:"));
         filterPanel.add(accountSearchField);
@@ -72,9 +81,11 @@ public class AccountDetailPanel extends JPanel {
         filterPanel.add(accountTypeFilter);
 
         JButton searchButton = new JButton("Search");
+        UIStyle.styleButton(searchButton);
         searchButton.addActionListener(e -> refreshAccounts());
 
         JButton clearButton = new JButton("Clear");
+        UIStyle.styleButton(clearButton);
         clearButton.addActionListener(e -> clearAccountFilters());
 
         filterPanel.add(searchButton);
@@ -91,6 +102,10 @@ public class AccountDetailPanel extends JPanel {
         add(topPanel, BorderLayout.NORTH);
 
         JPanel centerPanel = new JPanel(new GridLayout(2, 1, 5, 5));
+        centerPanel.setBackground(UIStyle.BACKGROUND_COLOR);
+
+        UIStyle.styleTable(accountTable);
+        UIStyle.styleTable(transactionTable);
 
         centerPanel.add(new JScrollPane(accountTable));
         centerPanel.add(new JScrollPane(transactionTable));
@@ -104,23 +119,30 @@ public class AccountDetailPanel extends JPanel {
         });
 
         JPanel buttonPanel = new JPanel(new GridLayout(1, 6, 5, 5));
+        buttonPanel.setBackground(UIStyle.BACKGROUND_COLOR);
 
         JButton openAccountButton = new JButton("Open Account");
+        UIStyle.styleButton(openAccountButton);
         openAccountButton.addActionListener(e -> openAccount());
 
         JButton closeAccountButton = new JButton("Close Account");
+        UIStyle.styleButton(closeAccountButton);
         closeAccountButton.addActionListener(e -> closeSelectedAccount());
 
         JButton depositButton = new JButton("Deposit");
+        UIStyle.styleButton(depositButton);
         depositButton.addActionListener(e -> openTransactionDialog("DEPOSIT"));
 
         JButton withdrawButton = new JButton("Withdraw");
+        UIStyle.styleButton(withdrawButton);
         withdrawButton.addActionListener(e -> openTransactionDialog("WITHDRAW"));
 
         JButton transferButton = new JButton("Transfer");
+        UIStyle.styleButton(transferButton);
         transferButton.addActionListener(e -> openTransactionDialog("TRANSFER"));
 
         JButton refreshButton = new JButton("Refresh");
+        UIStyle.styleButton(refreshButton);
         refreshButton.addActionListener(e -> refreshAccounts());
 
         buttonPanel.add(openAccountButton);

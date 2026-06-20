@@ -1,6 +1,7 @@
 package com.bank.gui;
 
-import com.bank.controller.BankController;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -9,8 +10,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
+
+import com.bank.controller.BankController;
+import com.bank.gui.style.UIStyle;
 
 public class LoginFrame extends JFrame {
 
@@ -33,18 +35,28 @@ public class LoginFrame extends JFrame {
         setTitle("Bank Management System - Login");
         setSize(400, 220);
         setLocationRelativeTo(null);
+        setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        getContentPane().setBackground(UIStyle.BACKGROUND_COLOR);
     }
 
     private void buildLayout() {
         setLayout(new BorderLayout());
 
+        JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
+        UIStyle.stylePanel(contentPanel);
+
         JLabel titleLabel = new JLabel(
                 "Employee Login",
                 JLabel.CENTER
         );
+        UIStyle.styleTitle(titleLabel);
 
         JPanel formPanel = new JPanel(new GridLayout(2, 2, 10, 10));
+        formPanel.setBackground(UIStyle.BACKGROUND_COLOR);
+
+        usernameField.setFont(UIStyle.NORMAL_FONT);
+        passwordField.setFont(UIStyle.NORMAL_FONT);
 
         formPanel.add(new JLabel("Username:"));
         formPanel.add(usernameField);
@@ -53,11 +65,20 @@ public class LoginFrame extends JFrame {
         formPanel.add(passwordField);
 
         JButton loginButton = new JButton("Login");
+        UIStyle.styleButton(loginButton);
         loginButton.addActionListener(e -> login());
 
-        add(titleLabel, BorderLayout.NORTH);
-        add(formPanel, BorderLayout.CENTER);
-        add(loginButton, BorderLayout.SOUTH);
+        /*
+         * The default button is activated when Enter is pressed anywhere
+         * inside the login window.
+         */
+        getRootPane().setDefaultButton(loginButton);
+
+        contentPanel.add(titleLabel, BorderLayout.NORTH);
+        contentPanel.add(formPanel, BorderLayout.CENTER);
+        contentPanel.add(loginButton, BorderLayout.SOUTH);
+
+        add(contentPanel, BorderLayout.CENTER);
     }
 
     private void login() {

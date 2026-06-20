@@ -15,6 +15,7 @@ import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 import com.bank.controller.BankController;
+import com.bank.gui.style.UIStyle;
 import com.bank.model.Customer;
 
 public class CustomerListPanel extends JPanel {
@@ -45,14 +46,18 @@ public class CustomerListPanel extends JPanel {
     }
 
     private void buildLayout() {
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(10,10));
+        UIStyle.stylePanel(this);
 
         JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(UIStyle.BACKGROUND_COLOR);
 
         topPanel.add(
                 new JLabel("Search: "),
                 BorderLayout.WEST
         );
+
+        searchField.setFont(UIStyle.NORMAL_FONT);
 
         topPanel.add(
                 searchField,
@@ -60,17 +65,23 @@ public class CustomerListPanel extends JPanel {
         );
 
         JButton searchButton = new JButton("Search");
+        UIStyle.styleButton(searchButton);
         searchButton.addActionListener(e -> searchCustomers());
 
         JButton refreshButton = new JButton("Refresh");
+        UIStyle.styleButton(refreshButton);
         refreshButton.addActionListener(e -> refreshCustomers());
 
         JPanel buttonPanel = new JPanel(new GridLayout(1, 4, 5, 5));
+        buttonPanel.setBackground(UIStyle.BACKGROUND_COLOR);
+        
 
         JButton addButton = new JButton("Add Customer");
+        UIStyle.styleButton(addButton);
         addButton.addActionListener(e -> addCustomer());
 
         JButton viewAccountsButton = new JButton("View Accounts");
+        UIStyle.styleButton(viewAccountsButton);
         viewAccountsButton.addActionListener(e -> viewSelectedCustomerAccounts());
 
         buttonPanel.add(searchButton);
@@ -78,10 +89,13 @@ public class CustomerListPanel extends JPanel {
         buttonPanel.add(addButton);
         buttonPanel.add(viewAccountsButton);
 
+        
         topPanel.add(
                 buttonPanel,
                 BorderLayout.EAST
         );
+
+        UIStyle.styleTable(customerTable);
 
         add(
                 topPanel,
