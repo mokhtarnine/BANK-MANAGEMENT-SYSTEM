@@ -1,0 +1,5 @@
+{
+    "maven.executable.path": "C:\\Users\\mokht\\AppData\\Local\\Temp\\chocolatey\\ChocolateyScratch\\maven\\3.9.16\\apache-maven-3.9.16\\bin\\mvn.cmd",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.debug.settings.onBuildFailureProceed": true
+}
