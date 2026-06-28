@@ -1031,3 +1031,10 @@ Caused by: org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_PRIMARYKEY] A PRIMARY 
 2026-06-28 21:27:33 INFO: Admin User (ADMIN) - Logged in successfully
 2026-06-28 21:27:51 INFO: Admin User (ADMIN) - Opened CHECKING account ACC3
 2026-06-28 21:28:08 INFO: Admin User (ADMIN) - Opened CHECKING account ACC4
+2026-06-28 21:32:50 INFO: Admin User (ADMIN) - Logged in successfully
+2026-06-28 21:33:24 INFO: Admin User (ADMIN) - Created customer G66
+2026-06-28 21:33:35 INFO: Admin User (ADMIN) - Opened CHECKING account ACC5
+2026-06-28 21:33:49 INFO: Admin User (ADMIN) - Transferred 1000.0 from ACC5 to ACC4
+2026-06-28 21:54:06 INFO: Admin User (ADMIN) - Logged in successfully
+2026-06-28 21:54:44 INFO: Admin User (ADMIN) - Deposited 1000.0 into account ACC5
+2026-06-28 21:55:28 INFO: Admin User (ADMIN) - Logged in successfully
