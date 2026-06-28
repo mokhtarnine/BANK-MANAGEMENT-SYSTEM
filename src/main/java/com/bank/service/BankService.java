@@ -1,18 +1,23 @@
 package com.bank.service;
 
-import com.bank.exception.BankException;
-import com.bank.exception.AccountClosedException;
-import com.bank.exception.InvalidAmountException;
-import com.bank.model.*;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.bank.exception.AccountClosedException;
+import com.bank.exception.BankException;
+import com.bank.exception.InvalidAmountException;
+import com.bank.model.Account;
+import com.bank.model.CheckingAccount;
+import com.bank.model.Customer;
+import com.bank.model.Employee;
+import com.bank.model.SavingsAccount;
+import com.bank.model.Transaction;
+import com.bank.model.TransactionType;
 import com.bank.repository.BankRepository;
 import com.bank.repository.DatabaseManager;
 import com.bank.repository.JdbcBankRepository;
@@ -51,6 +56,26 @@ public class BankService {
     public Collection<Customer> getAllCustomers(){
         return customers.values();
     }
+    // find the biggest exisiting account number for don't duplicate in number account
+    private String generateNextAccount(){
+        int maxNumber = 0;
+
+        for (Account account: accounts){
+            String number = account.getAccountNumber();
+
+            if(number.startsWith("ACC")){
+                try{
+                    int value = Integer.parseInt(number.substring(3));
+                    if(value > maxNumber ){
+                        maxNumber = value;
+                    }
+                } catch (NumberFormatException e){
+                    // ingonre account number that do not follow ACC format
+                }
+            }
+        }
+        return "ACC" + (maxNumber + 1);
+    }
     // open Account
     public Account openAccount(String customerId,String type,double initialBalance) {
         Customer customer = customers.get(customerId);
@@ -63,7 +88,7 @@ public class BankService {
             throw new InvalidAmountException(initialBalance);
         }
 
-        String accountNumber = "ACC" + (accounts.size() + 1);
+        String accountNumber = generateNextAccount();
 
         Account account;
 
