@@ -13,6 +13,12 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Tests for AuditService logging.
+ *
+ * These tests check that the logging configuration exists and that a successful
+ * action is written into a log file.
+ */
 class AuditServiceTest {
 
     @TempDir
@@ -20,6 +26,7 @@ class AuditServiceTest {
 
     @Test
     void loggingConfiguration_shouldExistInResources() throws IOException {
+        // Load logging.properties from src/main/resources through the classpath.
         try (InputStream input = AuditService.class
                 .getClassLoader()
                 .getResourceAsStream("logging.properties")) {
@@ -35,6 +42,7 @@ class AuditServiceTest {
 
     @Test
     void recordAction_shouldWriteEmployeeAndActionToLog() throws IOException {
+        // Use a temporary log file so the test does not modify logs/bank.log.
         Path logFile = tempDir.resolve("audit-test.log");
 
         Employee employee = new Employee(
@@ -53,9 +61,11 @@ class AuditServiceTest {
                     "Deposited 100.0 into account ACC1"
             );
             auditService.flush();
+            // Read the file after flushing so the assertion sees written text.
             logContent = Files.readString(logFile);
         }
 
+        // Assert that both employee identity and action text were written.
         assertTrue(logContent.contains("Sara (ADMIN)"));
         assertTrue(logContent.contains("Deposited 100.0 into account ACC1"));
     }

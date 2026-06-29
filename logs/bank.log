@@ -1039,3 +1039,4 @@ Caused by: org.sqlite.SQLiteException: [SQLITE_CONSTRAINT_PRIMARYKEY] A PRIMARY 
 2026-06-28 21:54:44 INFO: Admin User (ADMIN) - Deposited 1000.0 into account ACC5
 2026-06-28 21:55:28 INFO: Admin User (ADMIN) - Logged in successfully
 2026-06-29 14:50:10 INFO: Admin User (ADMIN) - Logged in successfully
+2026-06-29 15:06:12 INFO: Admin User (ADMIN) - Logged in successfully

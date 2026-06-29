@@ -21,6 +21,13 @@ import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Tests for SQLite repository persistence.
+ *
+ * This test saves customers, accounts, and transactions into a temporary SQLite
+ * database, then loads them again to prove the repository preserves the full
+ * object state.
+ */
 class RepositoryTest {
 
     @TempDir
@@ -28,6 +35,7 @@ class RepositoryTest {
 
     @Test
     void saveAllAndLoadAll_shouldPreserveCustomersAccountsAndTransactions() throws BankException {
+        // Arrange: create a repository connected to a temporary test database.
         BankRepository repository = createRepository();
 
         Customer customer = new Customer(
@@ -87,13 +95,16 @@ class RepositoryTest {
         accounts.add(checkingAccount);
         accounts.add(savingsAccount);
 
+        // Act 1: save the prepared in-memory objects to SQLite.
         repository.saveAll(customers, accounts);
 
         HashMap<String, Customer> loadedCustomers = new HashMap<>();
         ArrayList<Account> loadedAccounts = new ArrayList<>();
 
+        // Act 2: load the data into new empty collections.
         repository.loadAll(loadedCustomers, loadedAccounts);
 
+        // Assert: verify customers and account ownership were restored.
         assertEquals(1, loadedCustomers.size());
         assertEquals(2, loadedAccounts.size());
 
@@ -104,6 +115,7 @@ class RepositoryTest {
         assertEquals("ahmed@gmail.com", loadedCustomer.getEmail());
         assertEquals(2, loadedCustomer.getAccounts().size());
 
+        // Assert: verify account type-specific fields were preserved.
         Account loadedChecking = findAccount(loadedAccounts, "ACC100");
         assertInstanceOf(CheckingAccount.class, loadedChecking);
         assertEquals(1000.0, loadedChecking.getBalance(), 0.001);
@@ -124,6 +136,7 @@ class RepositoryTest {
                 0.001
         );
 
+        // Assert: verify transaction history was saved and loaded correctly.
         assertEquals(1, loadedChecking.getTransaction().size());
         Transaction loadedDeposit = loadedChecking.getTransaction().get(0);
         assertEquals("T001", loadedDeposit.getTransactionId());
@@ -142,6 +155,10 @@ class RepositoryTest {
     }
 
     private BankRepository createRepository() {
+        /*
+         * @TempDir creates a clean folder for this test. The database is placed
+         * there so tests never write to the real application bank.db.
+         */
         Path databasePath = tempDir.resolve("repository-test.db").toAbsolutePath();
         String databaseUrl = "jdbc:sqlite:" + databasePath.toString().replace("\\", "/");
 
@@ -149,6 +166,7 @@ class RepositoryTest {
     }
 
     private Account findAccount(ArrayList<Account> accounts, String accountNumber) {
+        // Helper used by assertions to find a loaded account by number.
         for (Account account : accounts) {
             if (account.getAccountNumber().equals(accountNumber)) {
                 return account;

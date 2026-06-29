@@ -6,11 +6,18 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for the Customer model.
+ *
+ * These tests check simple model behavior: constructor values, default account
+ * list, email update, and the role returned by getRole().
+ */
 class CustomerTest {
 
     @Test
     void customerConstructor_shouldInitializeFields() {
 
+        // Arrange + Act: create a customer with known values.
         Customer customer =
                 new Customer(
                         "C001",
@@ -20,6 +27,7 @@ class CustomerTest {
                         "ahmed@gmail.com"
                 );
 
+        // Assert: each getter should return the value passed to the constructor.
         assertEquals(
                 "C001",
                 customer.getId()
@@ -58,6 +66,7 @@ class CustomerTest {
                         "sara@gmail.com"
                 );
 
+        // A new customer should start with an empty account list.
         assertNotNull(
                 customer.getAccounts()
         );

@@ -14,6 +14,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Unit tests for BankService.
+ *
+ * BankService is tested with persistence disabled, so these tests use only
+ * memory and do not change the real bank.db file. The tests verify business
+ * rules: customer creation, opening accounts, deposits, withdrawals, transfers,
+ * transaction history, and exceptions.
+ */
 class BankServiceTest {
 
     private BankService bankService;
@@ -21,6 +29,10 @@ class BankServiceTest {
 
     @BeforeEach
     void setUp() {
+        /*
+         * @BeforeEach runs before every @Test method. This gives every test a
+         * fresh BankService so tests do not depend on each other.
+         */
         bankService = new BankService(false);
 
         employee = new Employee(
@@ -33,6 +45,7 @@ class BankServiceTest {
     }
 
     private Customer createDefaultCustomer() {
+        // Helper method for common test setup.
         return bankService.createCustomer(
                 "C001",
                 "Ahmed",
@@ -44,8 +57,10 @@ class BankServiceTest {
 
     @Test
     void createCustomer_shouldStoreCustomer() {
+        // Arrange + Act: create one customer through the service.
         Customer customer = createDefaultCustomer();
 
+        // Assert: customer collection should now contain exactly that customer.
         assertEquals(1, bankService.getAllCustomers().size());
         assertTrue(bankService.getAllCustomers().contains(customer));
     }
@@ -81,6 +96,10 @@ class BankServiceTest {
                 employee
         );
 
+        /*
+         * After deposit, we check both the account balance and the transaction
+         * history. This proves the operation changed money and created history.
+         */
         assertEquals(1500.0, account.getBalance(), 0.001);
         assertEquals(1, account.getTransaction().size());
         assertEquals(TransactionType.DEPOSIT, account.getTransaction().get(0).getType());
@@ -152,6 +171,7 @@ class BankServiceTest {
                 employee
         );
 
+        // Transfer should subtract from source and add to target.
         assertEquals(700.0, fromAccount.getBalance(), 0.001);
         assertEquals(500.0, toAccount.getBalance(), 0.001);
         assertEquals(1, fromAccount.getTransaction().size());

@@ -13,8 +13,18 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Unit tests for account model behavior.
+ *
+ * These tests check the rules inside Account, SavingsAccount, and
+ * CheckingAccount without using the controller, GUI, or database.
+ */
 class AccountTest {
 
+    /**
+     * Helper method used by many tests. It avoids repeating employee creation
+     * in every test case.
+     */
     private Employee createEmployee() {
         return new Employee(
                 "E001",
@@ -27,6 +37,7 @@ class AccountTest {
 
     @Test
     void deposit_shouldIncreaseBalance() throws BankException {
+        // Arrange: create the objects needed for the test.
         Employee employee = createEmployee();
 
         Account account = new SavingsAccount(
@@ -35,11 +46,13 @@ class AccountTest {
                 0.05
         );
 
+        // Act: call the method being tested.
         account.deposit(
                 500.0,
                 employee
         );
 
+        // Assert: verify the result is what we expected.
         assertEquals(
                 1500.0,
                 account.getBalance(),
@@ -57,6 +70,10 @@ class AccountTest {
                 0.05
         );
 
+        /*
+         * assertThrows means this operation is expected to fail with
+         * InvalidAmountException. If it does not fail, the test fails.
+         */
         assertThrows(
                 InvalidAmountException.class,
                 () -> account.deposit(
@@ -98,6 +115,7 @@ class AccountTest {
                 500.0
         );
 
+        // Checking accounts can go below zero if they stay inside overdraft.
         account.withdraw(
                 1200.0,
                 employee

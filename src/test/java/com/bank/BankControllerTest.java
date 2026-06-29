@@ -17,17 +17,32 @@ import com.bank.model.Account;
 import com.bank.model.Customer;
 import com.bank.model.Employee;
 
+/**
+ * Tests for BankController.
+ *
+ * These tests verify that the controller correctly delegates work to
+ * BankService, manages login state, prepares data for the GUI, and can process
+ * queued transactions through background threads.
+ */
 class BankControllerTest {
 
     private BankController controller;
 
     @BeforeEach
     void setUp() {
+        /*
+         * false disables real database persistence. This keeps controller tests
+         * isolated from bank.db and makes them repeatable.
+         */
         controller = new BankController(false);
     }
 
     @AfterEach
     void tearDown() {
+        /*
+         * BankController starts worker threads. @AfterEach stops them after each
+         * test so the test process can finish cleanly.
+         */
         controller.shutdownThreads();
     }
 
@@ -38,6 +53,7 @@ class BankControllerTest {
                 "admin123"
         );
 
+        // Successful login should store the employee inside the controller.
         assertTrue(result);
 
         Employee employee = controller.getCurrentEmployee();
@@ -68,6 +84,10 @@ class BankControllerTest {
                 "ahmed@gmail.com"
         );
 
+        /*
+         * The controller should return the created customer and expose it through
+         * getAllCustomers(), proving it delegated to BankService.
+         */
         assertNotNull(customer);
         assertEquals("C001", customer.getId());
         assertEquals("Ahmed", customer.getFullName());
@@ -246,6 +266,10 @@ class BankControllerTest {
                 500.0
         );
 
+        /*
+         * requestDeposit uses TransactionQueue and TransactionWorker. The worker
+         * runs on another thread, so the test waits until the balance changes.
+         */
         waitForBalance(account, 1500.0);
 
         assertEquals(1500.0, account.getBalance(), 0.001);
@@ -343,6 +367,10 @@ class BankControllerTest {
                 200.0
         );
 
+        /*
+         * This method returns Object[][] because Swing tables can display this
+         * simple row/column format without knowing the Account class.
+         */
         Object[][] rows = controller.getCustomerAccountTableData(
                 customer.getId(),
                 checkingAccount.getAccountNumber(),
@@ -355,6 +383,11 @@ class BankControllerTest {
     }
 
     private void waitForBalance(Account account, double expectedBalance) throws InterruptedException {
+        /*
+         * Small polling helper for asynchronous tests. It checks the balance a
+         * few times because the worker thread may not process the request
+         * immediately.
+         */
         int attempts = 0;
 
         while (attempts < 10
