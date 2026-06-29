@@ -18,6 +18,12 @@ import com.bank.exception.InsufficientFundsException;
 import com.bank.exception.InvalidAmountException;
 import com.bank.gui.style.UIStyle;
 
+/**
+ * Dialog used for deposit, withdrawal, and transfer operations.
+ *
+ * The same dialog is reused for all three transaction types. For transfers it
+ * also shows a target account field. All operations go through BankController.
+ */
 public class TransactionDialog extends JDialog {
 
     private final BankController controller;
@@ -100,6 +106,10 @@ public class TransactionDialog extends JDialog {
         try {
             double amount = Double.parseDouble(amountField.getText());
 
+            /*
+             * Choose the correct controller method based on the dialog mode.
+             * The controller/service will validate business rules.
+             */
             if (transactionType.equals("DEPOSIT")) {
                 controller.deposit(
                         accountNumber,
@@ -120,6 +130,7 @@ public class TransactionDialog extends JDialog {
                 );
             }
 
+            // After success, reload the dashboard and tables.
             mainFrame.refreshAllPanels();
 
             JOptionPane.showMessageDialog(

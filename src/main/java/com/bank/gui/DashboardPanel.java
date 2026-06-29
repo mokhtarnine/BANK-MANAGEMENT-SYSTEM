@@ -10,6 +10,11 @@ import javax.swing.JPanel;
 import com.bank.controller.BankController;
 import com.bank.gui.style.UIStyle;
 
+/**
+ * Dashboard tab that shows summary numbers for the whole bank.
+ *
+ * The values are calculated through BankController, then displayed in labels.
+ */
 public class DashboardPanel extends JPanel {
 
     private final BankController controller;
@@ -74,6 +79,7 @@ public class DashboardPanel extends JPanel {
     }
 
     public void refreshDashboard() {
+        // Read fresh totals every time the dashboard is opened or refreshed.
         int totalCustomers = controller.getTotalCustomers();
         int totalAccounts = controller.getTotalAccounts();
         double totalBalance = controller.getTotalBalance();

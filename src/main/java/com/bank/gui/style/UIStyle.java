@@ -12,6 +12,12 @@ import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.JTableHeader;
 
+/**
+ * Shared Swing styling helper.
+ *
+ * Keeping colors, fonts, table style, and button style here avoids repeating
+ * the same UI code in every panel.
+ */
 public final class UIStyle {
 
     // Shared colors
@@ -41,22 +47,26 @@ public final class UIStyle {
     private UIStyle() {
     }
 
-    //Applies the common background, font, and padding to a panel.
-     
+    /**
+     * Applies the common background, font, and padding to a panel.
+     */
     public static void stylePanel(JPanel panel) {
         panel.setBackground(BACKGROUND_COLOR);
         panel.setBorder(new EmptyBorder(15, 15, 15, 15));
         panel.setFont(NORMAL_FONT);
     }
 
-    // Styles labels used as screen or section titles.
+    /**
+     * Styles labels used as screen or section titles.
+     */
     public static void styleTitle(JLabel label) {
         label.setFont(TITLE_FONT);
         label.setForeground(TITLE_COLOR);
     }
 
-    //Applies the same appearance to application buttons.
-
+    /**
+     * Applies the same appearance to application buttons.
+     */
     public static void styleButton(JButton button) {
         button.setFont(NORMAL_FONT);
         button.setBackground(BUTTON_COLOR);
@@ -65,7 +75,9 @@ public final class UIStyle {
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
 
-    // Styles the table rows and table header.
+    /**
+     * Styles the table rows and table header.
+     */
     public static void styleTable(JTable table) {
         table.setFont(NORMAL_FONT);
         table.setRowHeight(28);

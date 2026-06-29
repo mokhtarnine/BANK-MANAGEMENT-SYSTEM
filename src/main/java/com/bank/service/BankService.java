@@ -22,8 +22,15 @@ import com.bank.repository.BankRepository;
 import com.bank.repository.DatabaseManager;
 import com.bank.repository.JdbcBankRepository;
 
+/**
+ * Service layer of the application.
+ *
+ * This class contains the main banking rules. The GUI and controller ask this
+ * class to create customers, open accounts, deposit, withdraw, transfer, and
+ * search data. The service updates the model objects first, then asks the
+ * repository to save the new state when persistence is enabled.
+ */
 public class BankService {
-    /* role of this calss like brain of application Apply bank rules,Manage operations,Control models */
 
     private final ArrayList<Account> accounts;
     private final HashMap<String, Customer> customers;
@@ -45,18 +52,32 @@ public class BankService {
         loadDataSafely();
     }
 
-    //  methdoe of crearteCustomer
+    /**
+     * Creates a customer and stores it in the customer map using the customer id
+     * as the key. After the customer is added, the full bank state is saved.
+     */
     public Customer createCustomer(String id,String fullName,String username,String password,String email) {
         Customer customer = new Customer( id,fullName,username,password,email);
         customers.put(id, customer);
         saveDataSafely();
         return customer;
     }
-    // get all customers
+
+    /**
+     * Returns all customers currently loaded in memory.
+     */
     public Collection<Customer> getAllCustomers(){
         return customers.values();
     }
-    // find the biggest exisiting account number for don't duplicate in number account
+
+    /**
+     * Generates the next account number by reading the biggest existing ACC
+     * number, then adding 1.
+     *
+     * This avoids duplicate numbers after loading old data from SQLite. For
+     * example, if the database contains ACC2 only, accounts.size() would create
+     * ACC2 again, but this method correctly creates ACC3.
+     */
     private String generateNextAccount(){
         int maxNumber = 0;
 
@@ -76,7 +97,14 @@ public class BankService {
         }
         return "ACC" + (maxNumber + 1);
     }
-    // open Account
+    /**
+     * Opens a checking or savings account for an existing customer.
+     *
+     * The account is stored in two places:
+     * - the global accounts list, so the bank can search all accounts
+     * - the customer's own account list, so the GUI can show that customer's
+     *   accounts
+     */
     public Account openAccount(String customerId,String type,double initialBalance) {
         Customer customer = customers.get(customerId);
 
@@ -107,7 +135,10 @@ public class BankService {
 
         return account;
     }
-    // find account 
+    /**
+     * Searches the loaded accounts list and returns the account with the given
+     * account number. Returns null when no account matches.
+     */
     public Account findAccount(String accountNumber) {
         for (Account account : accounts) {
             if (account.getAccountNumber().equals(accountNumber)) {
@@ -117,7 +148,10 @@ public class BankService {
 
         return null;
     }
-    // Add Deposit and Withdraw
+    /**
+     * Deposits money into an account, records a DEPOSIT transaction, then saves
+     * the updated bank state.
+     */
     public void deposit(String accountNumber,double amount,Employee employee) throws BankException {
         Account account = findAccount(accountNumber);
 
@@ -135,6 +169,10 @@ public class BankService {
         saveDataSafely();
     }
 
+    /**
+     * Withdraws money from an account, records a WITHDRAW transaction, then
+     * saves the updated bank state.
+     */
     public void withdraw(String accountNumber,double amount,Employee employee) throws BankException {
         Account account = findAccount(accountNumber);
 
@@ -227,7 +265,10 @@ public class BankService {
             transferLock.unlock();
         }
     }
-    // Add Search Methods
+    /**
+     * Searches customers by full name, id, or email. The GUI uses this for the
+     * customer search box.
+     */
     public List<Customer> searchCustomers(String keyword) {
         List<Customer> result = new ArrayList<>();
             //If customer name contains keyword
@@ -245,11 +286,17 @@ public class BankService {
 
         return result;
     }
-    // get all accounts
+    /**
+     * Returns the loaded accounts list. The controller uses this for dashboard
+     * totals and account table data.
+     */
     public List<Account> getAllAccounts() {
         return accounts;
     }
-    // close Account 
+
+    /**
+     * Closes an account only when the account exists and has zero balance.
+     */
     public void closeAccount(String accountNumber) throws BankException {
         Account account = findAccount(accountNumber);
 
@@ -260,7 +307,9 @@ public class BankService {
         account.closeAccount();
         saveDataSafely();
     }
-    // filter Account by type 
+    /**
+     * Returns only accounts that match the requested account type.
+     */
     public List<Account> filterAccountsByType(String type) {
         List<Account> result = new ArrayList<>();
 
@@ -274,7 +323,9 @@ public class BankService {
 
         return result;
     }
-    // get transaction history
+    /**
+     * Returns the transaction history for one account.
+     */
     public List<Transaction> getTransactionHistory(String accountNumber) {
         Account account = findAccount(accountNumber);
 
@@ -285,6 +336,10 @@ public class BankService {
         return account.getTransaction();
     }
 
+    /**
+     * Builds a transaction record after a successful operation. The balanceAfter
+     * value is captured from the account after the balance has changed.
+     */
     private Transaction createTransaction(
             TransactionType type,
             double amount,
@@ -301,7 +356,10 @@ public class BankService {
         );
     }
 
-    // load data / old data appears again
+    /**
+     * Loads saved customers, accounts, and transactions from the repository when
+     * persistence is enabled.
+     */
     private void loadDataSafely() {
         if (repository == null) {
             return;
@@ -317,7 +375,11 @@ public class BankService {
         }
     }
 
-    //Try to save. If saving fails, throw runtime error with clear message.
+    /**
+     * Saves all current data through the repository. If the repository reports a
+     * problem, the service converts it to an IllegalStateException so the
+     * controller and GUI can show a clear failure message.
+     */
     private void saveDataSafely() {
         if (repository == null) {
             return;

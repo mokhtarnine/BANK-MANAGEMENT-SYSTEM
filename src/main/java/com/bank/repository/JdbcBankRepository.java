@@ -19,17 +19,14 @@ import com.bank.model.SavingsAccount;
 import com.bank.model.Transaction;
 import com.bank.model.TransactionType;
 
+/**
+ * SQLite implementation of BankRepository.
+ *
+ * This class converts Java objects into database rows and converts database
+ * rows back into Java objects. It does not contain banking rules; those stay in
+ * BankService. This repository only knows how to persist the current state.
+ */
 public class JdbcBankRepository implements BankRepository {
-    /**
-
-     * This class is responsible for:*- storing banking data in SQLite
-                                    * - retrieving customers and accounts
-                                    * - updating account balances
-                                    * - saving transactions
-                                    * - executing SQL queries through JDBC
-     * It uses DatabaseManager to manage database connections.
-     */
-
     private final DatabaseManager databaseManager;
 
     public JdbcBankRepository(DatabaseManager databaseManager) {
@@ -140,9 +137,19 @@ public class JdbcBankRepository implements BankRepository {
             ArrayList<Account> accounts
     ) throws BankException {
         try (Connection connection = databaseManager.getConnection()) {
+            /*
+             * Save the full bank state as one database transaction. If any
+             * insert fails, rollback returns the database to its previous state
+             * instead of saving only half of the data.
+             */
             connection.setAutoCommit(false);
 
             try {
+                /*
+                 * Existing rows are removed first, then the current in-memory
+                 * state is inserted again. This keeps SQLite synchronized with
+                 * the lists/maps inside BankService.
+                 */
                 saveTransactions(connection, new ArrayList<>());
                 saveAccounts(connection, customers, new ArrayList<>());
                 saveCustomers(connection, customers);
@@ -276,6 +283,11 @@ public class JdbcBankRepository implements BankRepository {
             deleteStatement.executeUpdate();
 
             for (Account account : accounts) {
+                /*
+                 * The Account object does not store customerId directly. The
+                 * owner is found by checking which Customer contains this
+                 * account in its account list.
+                 */
                 String customerId = findCustomerIdForAccount(customers, account);
 
                 if (customerId == null) {
@@ -337,6 +349,7 @@ public class JdbcBankRepository implements BankRepository {
                 Customer customer = customers.get(resultSet.getString("customer_id"));
 
                 if (customer != null) {
+                    // Rebuild the relationship: Customer has many accounts.
                     customer.addAccount(account);
                 }
             }
@@ -350,6 +363,11 @@ public class JdbcBankRepository implements BankRepository {
         String accountType = resultSet.getString("account_type");
         double balance = resultSet.getDouble("balance");
 
+        /*
+         * Preserve polymorphism when loading data. CHECKING rows become
+         * CheckingAccount objects, and SAVINGS rows become SavingsAccount
+         * objects.
+         */
         if ("CHECKING".equalsIgnoreCase(accountType)) {
             return new CheckingAccount(
                     accountNumber,
@@ -398,6 +416,11 @@ public class JdbcBankRepository implements BankRepository {
             deleteStatement.executeUpdate();
 
             for (Account account : accounts) {
+                /*
+                 * Transactions belong to accounts in the model. While saving,
+                 * each transaction also stores the account number so it can be
+                 * attached to the correct account again during loading.
+                 */
                 for (Transaction transaction : account.getTransaction()) {
                     insertStatement.setString(1, transaction.getTransactionId());
                     insertStatement.setString(2, account.getAccountNumber());
@@ -469,6 +492,10 @@ public class JdbcBankRepository implements BankRepository {
                     continue;
                 }
 
+                /*
+                 * Rebuild the transaction object and attach it back to the
+                 * account that owns it.
+                 */
                 Transaction transaction = new Transaction(
                         resultSet.getString("transaction_id"),
                         TransactionType.valueOf(resultSet.getString("transaction_type")),

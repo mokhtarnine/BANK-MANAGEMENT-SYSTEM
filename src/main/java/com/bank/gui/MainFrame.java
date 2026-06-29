@@ -12,6 +12,13 @@ import javax.swing.JTabbedPane;
 import com.bank.controller.BankController;
 import com.bank.gui.style.UIStyle;
 
+/**
+ * Main application window after successful login.
+ *
+ * This frame owns the main tabs: dashboard, customers, account details, and
+ * alerts. GUI classes communicate with BankController only; they do not call
+ * BankService or the repository directly.
+ */
 public class MainFrame extends JFrame {
 
     private final BankController controller;
@@ -64,6 +71,10 @@ public class MainFrame extends JFrame {
     }
 
     private void refreshSelectedTab() {
+        /*
+         * Refresh only the tab the user opens. This keeps visible data updated
+         * without forcing every table to reload on every click.
+         */
         JPanel selectedPanel = (JPanel) tabs.getSelectedComponent();
 
         if (selectedPanel == dashboardPanel) {
@@ -92,6 +103,10 @@ public class MainFrame extends JFrame {
     }
 
     public void refreshAllPanels() {
+        /*
+         * Called after operations like open account, deposit, withdraw, and
+         * transfer so all tables and dashboard totals show the latest data.
+         */
         ((DashboardPanel) dashboardPanel).refreshDashboard();
         ((CustomerListPanel) customerListPanel).refreshCustomers();
         accountDetailPanel.refreshAccounts();
@@ -99,6 +114,10 @@ public class MainFrame extends JFrame {
 
     private void registerAlertHandler() {
         controller.setAlertHandler(message -> {
+            /*
+             * AlertMonitor runs on a background thread. Swing components must be
+             * updated on the Event Dispatch Thread, so invokeLater is required.
+             */
             javax.swing.SwingUtilities.invokeLater(() -> {
                 alertLogPanel.addAlert(message);
                 tabs.setSelectedComponent(alertLogPanel);

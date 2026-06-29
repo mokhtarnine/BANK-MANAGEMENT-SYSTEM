@@ -3,8 +3,13 @@ package com.bank.model;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a bank customer.
+ *
+ * A customer extends User and owns a list of accounts. The repository rebuilds
+ * this list when data is loaded from SQLite.
+ */
 public class Customer extends User {
-    /*this classe of cutomer  */
 
     private String email;
     private  List<Account> accounts;
@@ -23,9 +28,17 @@ public class Customer extends User {
     public List<Account> getAccounts(){
         return accounts;
     }
+
+    /**
+     * Links an account to this customer.
+     */
     public void addAccount(Account account){
         accounts.add(account);
     }
+
+    /**
+     * Removes the link between this customer and the given account.
+     */
     public void removeAccount(Account account){
         accounts.remove(account);
     }

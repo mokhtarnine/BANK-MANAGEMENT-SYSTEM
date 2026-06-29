@@ -4,8 +4,14 @@ import java.time.LocalDateTime;
 
 
 
+/**
+ * Immutable record of one banking operation.
+ *
+ * A transaction is created after a successful deposit, withdrawal, or transfer.
+ * Its fields are final, so the history cannot be accidentally changed after it
+ * is added to an account.
+ */
 public final class Transaction{
-    /*this classe of transactoin it emplemented for make transaction between accounts */
     private final String transactionId ;
     private final TransactionType type;
     private final double amount;

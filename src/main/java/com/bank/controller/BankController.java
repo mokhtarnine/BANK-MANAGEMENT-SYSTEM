@@ -18,8 +18,7 @@ import com.bank.thread.TransactionQueue;
 import com.bank.thread.TransactionRequest;
 import com.bank.thread.TransactionWorker;
 
-public class BankController {
-    /**
+/**
  * Central controller of the Bank Management System.
  *
  * This class acts as the communication layer between the graphical
@@ -37,6 +36,7 @@ public class BankController {
  * The controller delegates business rules to BankService and avoids
  * direct interaction between the GUI and persistence layer.
  */
+public class BankController {
             
     private final BankService bankService;
     private final AuthService authService;
@@ -54,6 +54,12 @@ public class BankController {
         this(true);
     }
 
+    /**
+     * Creates the controller and starts the background worker threads.
+     *
+     * @param persistenceEnabled true for the real application, false for unit
+     *        tests that should not touch the real SQLite database
+     */
     public BankController(boolean persistenceEnabled) {
         this.bankService = new BankService(persistenceEnabled);
         this.authService = new AuthService();
@@ -288,6 +294,11 @@ public class BankController {
     }
 
     public void requestDeposit(String accountNumber, double amount) {
+        /*
+         * Queue-based methods are used when a transaction should be processed by
+         * the background TransactionWorker instead of immediately on the GUI
+         * thread.
+         */
         TransactionRequest request = new TransactionRequest(
                 TransactionType.DEPOSIT,
                 accountNumber,
@@ -327,7 +338,10 @@ public class BankController {
     }
 
     public void shutdownThreads() {
-        // this for maybe happend problem in and waiting or or sleeping.
+        /*
+         * Stops background threads before the application closes. This prevents
+         * worker threads from staying alive after the Swing window is closed.
+         */
         transactionWorker.stop();
         workerThread.interrupt();
 
@@ -439,7 +453,10 @@ public class BankController {
         return className;
     }
 
-    // this for don't touch in file of alertMonitro all this ger by controller
+    /**
+     * Lets the GUI register a function that will receive alert messages from
+     * AlertMonitor. MainFrame uses this to update AlertLogPanel safely.
+     */
     public void setAlertHandler(java.util.function.Consumer<String> alertHandler) {
         alertMonitor.setAlertHandler(alertHandler);
     }

@@ -20,6 +20,12 @@ import com.bank.gui.style.UIStyle;
 import com.bank.model.Customer;
 import com.bank.model.Transaction;
 
+/**
+ * Account tab for the selected customer.
+ *
+ * This panel shows the customer's accounts, shows transaction history for the
+ * selected account, and opens dialogs for account operations.
+ */
 public class AccountDetailPanel extends JPanel {
 
     private final BankController controller;
@@ -156,6 +162,10 @@ public class AccountDetailPanel extends JPanel {
     }
 
     public void setCustomer(Customer customer) {
+        /*
+         * CustomerListPanel calls this method when the user selects a customer
+         * and clicks "View Accounts".
+         */
         this.customer = customer;
 
         if (customer == null) {
@@ -173,6 +183,7 @@ public class AccountDetailPanel extends JPanel {
     }
 
     public void refreshAccounts() {
+        // Clear old table rows before loading the selected customer's accounts.
         accountTableModel.setRowCount(0);
 
         if (customer == null) {
@@ -200,8 +211,9 @@ public class AccountDetailPanel extends JPanel {
         accountTypeFilter.setSelectedItem("ALL");
         refreshAccounts();
     }
-    //Reloads account data for the selected customer., Applies active search and type filters and updates,the account table contents.
- 
+    /**
+     * Reloads the history table for the currently selected account.
+     */
     private void refreshTransactionHistory() {
         transactionTableModel.setRowCount(0);
 
@@ -272,6 +284,7 @@ public class AccountDetailPanel extends JPanel {
                         initialBalance
                 );
 
+                // Refresh all panels because account totals and tables changed.
                 mainFrame.refreshAllPanels();
 
             } catch (NumberFormatException e) {
@@ -334,7 +347,9 @@ public class AccountDetailPanel extends JPanel {
                 .getValueAt(selectedRow, 0)
                 .toString();
     }
-    // Opens a transaction dialog for the selected account supports deposit, withdraw, transfer.
+    /**
+     * Opens a TransactionDialog for deposit, withdrawal, or transfer.
+     */
     private void openTransactionDialog(String transactionType) {
         String accountNumber = getSelectedAccountNumber();
 

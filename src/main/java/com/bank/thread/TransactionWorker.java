@@ -5,15 +5,14 @@ import com.bank.model.TransactionType;
 import com.bank.service.AuditService;
 import com.bank.service.BankService;
 
-public class TransactionWorker implements Runnable {
-    /**
+/**
  * Background worker responsible for processing queued transaction requests.
  *
  * The worker continuously takes requests from TransactionQueue and executes
  * them using BankService. Each successful or failed operation is recorded
  * using AuditService.
  */
-
+public class TransactionWorker implements Runnable {
     private final TransactionQueue queue;
     private final BankService bankService;
     private final AuditService auditService;
@@ -35,6 +34,10 @@ public class TransactionWorker implements Runnable {
     public void run() {
         while (running) {
             try {
+                /*
+                 * dequeue() blocks when the queue is empty. That means this
+                 * worker does not waste CPU while waiting for work.
+                 */
                 TransactionRequest request = queue.dequeue();
                 processRequest(request);
 
@@ -62,6 +65,10 @@ public class TransactionWorker implements Runnable {
     private void processRequest(TransactionRequest request) throws BankException {
         TransactionType type = request.getType();
 
+        /*
+         * The request contains the operation type and the required account
+         * numbers. The worker translates that request into a BankService call.
+         */
         if (type == TransactionType.DEPOSIT) {
             bankService.deposit(
                     request.getFromAccount(),

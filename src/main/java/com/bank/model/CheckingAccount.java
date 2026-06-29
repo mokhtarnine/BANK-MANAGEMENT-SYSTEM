@@ -5,8 +5,10 @@ import com.bank.exception.BankException;
 import com.bank.exception.InsufficientFundsException;
 import com.bank.exception.InvalidAmountException;
 
+/**
+ * Account type that allows overdraft up to a configured limit.
+ */
 public class CheckingAccount extends Account{
-    /*classe of type of ckecking account  */
     public double overdraftLimit;
 
     public CheckingAccount (String accountNumber, double balance,double overdraftLimit){
@@ -30,6 +32,11 @@ public class CheckingAccount extends Account{
             if (closed) {
                 throw new AccountClosedException(accountNumber);
             }
+            /*
+             * Checking accounts may go below zero, but only until the overdraft
+             * limit. Example: balance 100 and limit 500 allows balance down to
+             * -500.
+             */
             if (balance - amount < -overdraftLimit) {
                 throw new InsufficientFundsException(amount, balance + overdraftLimit);
             }

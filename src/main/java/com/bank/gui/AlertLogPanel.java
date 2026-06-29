@@ -12,6 +12,12 @@ import javax.swing.JTextArea;
 
 import com.bank.gui.style.UIStyle;
 
+/**
+ * Alerts tab.
+ *
+ * MainFrame sends low-balance messages here when AlertMonitor detects an
+ * account under the configured threshold.
+ */
 public class AlertLogPanel extends JPanel {
 
     private final JTextArea alertTextArea;
@@ -58,6 +64,7 @@ public class AlertLogPanel extends JPanel {
     }
 
     public void addAlert(String message) {
+        // Add a timestamp so the employee can see when the alert happened.
         String timestamp = LocalDateTime.now().format(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         );

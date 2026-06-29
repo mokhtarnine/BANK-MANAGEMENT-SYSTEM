@@ -9,14 +9,14 @@ import com.bank.model.Account;
 import com.bank.service.AuditService;
 import com.bank.service.BankService;
 
+/**
+ * Background monitoring thread responsible for detecting low-balance alerts.
+ *
+ * The monitor runs independently from the GUI and checks all accounts every few
+ * seconds. When an account balance goes below the threshold, it logs a warning
+ * and optionally sends the message to the GUI through alertHandler.
+ */
 public class AlertMonitor implements Runnable {
-    /**
-         * Background monitoring thread responsible for detecting and recording alerts.
-         *
-         * The monitor executes independently from the GUI and periodically
-         * checks application state for alert conditions.
-         */
-
     private final BankService bankService;
     private final AuditService auditService;
     private final double threshold;
@@ -43,6 +43,7 @@ public class AlertMonitor implements Runnable {
             checkAccounts();
 
             try {
+                // Wait before checking again so the monitor does not run nonstop.
                 Thread.sleep(3000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -70,6 +71,10 @@ public class AlertMonitor implements Runnable {
 
         if (account.getBalance() < threshold) {
             if (!alertedAccounts.contains(accountNumber)) {
+                /*
+                 * Remember this account after the first alert. This prevents
+                 * the GUI from receiving the same alert every 3 seconds.
+                 */
                 alertedAccounts.add(accountNumber);
 
                 throw new OverdraftAlertException(
@@ -78,6 +83,7 @@ public class AlertMonitor implements Runnable {
                 );
             }
         } else {
+            // If the balance becomes healthy again, allow a future alert.
             alertedAccounts.remove(accountNumber);
         }
     }

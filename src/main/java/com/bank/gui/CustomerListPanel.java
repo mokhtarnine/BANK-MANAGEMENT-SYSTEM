@@ -18,6 +18,13 @@ import com.bank.controller.BankController;
 import com.bank.gui.style.UIStyle;
 import com.bank.model.Customer;
 
+/**
+ * Customer tab.
+ *
+ * This panel displays customers, supports searching, creates new customers, and
+ * sends the selected customer to AccountDetailPanel when "View Accounts" is
+ * clicked.
+ */
 public class CustomerListPanel extends JPanel {
 
     private final BankController controller;
@@ -109,6 +116,7 @@ public class CustomerListPanel extends JPanel {
     }
 
     public void refreshCustomers() {
+        // Reload all customers from the controller and display them in the table.
         Collection<Customer> customers = controller.getAllCustomers();
         loadCustomers(customers);
     }
@@ -126,6 +134,7 @@ public class CustomerListPanel extends JPanel {
     }
 
     private void loadCustomers(Collection<Customer> customers) {
+        // Clear old rows before inserting the latest customer data.
         tableModel.setRowCount(0);
 
         for (Customer customer : customers) {
@@ -199,6 +208,7 @@ public class CustomerListPanel extends JPanel {
 
         Customer selectedCustomer = null;
 
+        // Find the full Customer object from the id stored in the selected row.
         for (Customer customer : controller.getAllCustomers()) {
             if (customer.getId().equals(customerId)) {
                 selectedCustomer = customer;

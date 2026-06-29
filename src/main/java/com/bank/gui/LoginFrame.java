@@ -14,6 +14,12 @@ import javax.swing.JTextField;
 import com.bank.controller.BankController;
 import com.bank.gui.style.UIStyle;
 
+/**
+ * First window shown to the employee.
+ *
+ * LoginFrame collects username and password, calls controller.login(), and
+ * opens MainFrame only when authentication succeeds.
+ */
 public class LoginFrame extends JFrame {
 
     private final BankController controller;
@@ -85,6 +91,7 @@ public class LoginFrame extends JFrame {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
 
+        // Authentication is handled by the controller, not directly by the GUI.
         boolean success = controller.login(username, password);
 
         if (success) {

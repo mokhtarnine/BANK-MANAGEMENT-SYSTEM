@@ -5,8 +5,10 @@ import com.bank.exception.BankException;
 import com.bank.exception.InsufficientFundsException;
 import com.bank.exception.InvalidAmountException;
 
+/**
+ * Account type that does not allow overdraft.
+ */
 public class SavingsAccount extends  Account {
-    /*classe fo sabing type of accountss */
     private  double interestRate ;
 
     public SavingsAccount(String accountNumber, double balance,double interestRate){
@@ -20,7 +22,9 @@ public class SavingsAccount extends  Account {
     public void setInterestRate(double interestRate){
         this.interestRate = interestRate;
     }
-    // methode of interest change about how interestRate of customer
+    /**
+     * Adds interest to the current balance.
+     */
     public void applyInterest(){
         lock.lock();
         try {
@@ -39,6 +43,7 @@ public class SavingsAccount extends  Account {
             if (closed) {
                 throw new AccountClosedException(accountNumber);
             }
+            // Savings accounts cannot go below zero.
             if (amount > balance ) {
                 throw new InsufficientFundsException(amount, balance);
             }

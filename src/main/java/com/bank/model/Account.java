@@ -10,13 +10,19 @@ import com.bank.exception.BankException;
 import com.bank.exception.InvalidAmountException;
 
 
+/**
+ * Base class for all account types.
+ *
+ * Common behavior, such as deposit, closing an account, transaction history,
+ * and thread locking, is kept here. Different account types implement their own
+ * withdraw rules by overriding withdraw().
+ */
 public abstract class Account {
-    /*this abstract classe for many type of account and transaction */
     protected  String accountNumber;
     protected double balance;
     protected boolean closed;
     protected List<Transaction> transactions;
-    protected final ReentrantLock lock; // for multiple threads at same time
+    protected final ReentrantLock lock; // Protects balance changes between threads.
 
     public Account(String accountNumber, double balance){
         this.accountNumber = accountNumber;
@@ -28,6 +34,11 @@ public abstract class Account {
     public String getAccountNumber(){
         return accountNumber;
     }
+
+    /**
+     * Adds money to the account after checking that the amount is positive and
+     * the account is not closed.
+     */
     public void deposit(double amount, Employee employee) throws AccountClosedException {
         lock.lock();
         try{
@@ -42,8 +53,15 @@ public abstract class Account {
             lock.unlock();
         }
     }
-    // here we don't implement of withdraw methode because it change behaver with diffrent classe
+    /**
+     * Withdraw is abstract because checking and savings accounts have different
+     * rules. Checking can use overdraft, while savings cannot go below zero.
+     */
     public abstract void withdraw(double amount, Employee employee) throws BankException;
+
+    /**
+     * Closes the account only when it is open and has zero balance.
+     */
     public void closeAccount() throws BankException {
         lock.lock();
         try {
@@ -73,7 +91,9 @@ public abstract class Account {
     public ReentrantLock getLock(){
         return lock;
     }
-    // this methode for repositry can set colse by this 
+    /**
+     * Used by the repository when loading saved account rows from SQLite.
+     */
     public void setClosed(boolean closed) {
         this.closed = closed;
     }
